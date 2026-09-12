@@ -3,227 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaris' Squishy Clicker | Needoh World Engine</title>
+    <title>Lego Simulator</title>
     <style>
-        :root {
-            --bg-color: #1a1235;
-            --panel-bg: #2b1f4c;
-            --panel-header: #3a2a68;
-            --accent-pink: #e83e8c;
-            --accent-purple: #6f42c1;
-            --accent-cyan: #00e5ff;
-            --accent-yellow: #ffd700;
-            --text-main: #ffffff;
-            --text-muted: #bdaedb;
-            --tier-common: #6c757d;
-            --tier-rare: #007bff;
-            --tier-epic: #8a2be2;
-            --tier-mythic: #fd7e14;
-            --tier-eternal: #dc3545;
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #1a1a1a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #auth-portal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(14,9,28,0.98); z-index: 1000; display: flex; justify-content: center; align-items: center; }
-        .auth-box { background: var(--panel-bg); border: 2px solid var(--panel-header); padding: 35px; border-radius: 16px; width: 380px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.7); }
-        .auth-box h2 { color: var(--accent-pink); margin-bottom: 8px; font-size: 1.6rem; }
-        .auth-tabs { display: flex; gap: 5px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 8px; }
-        .auth-tab-btn { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: bold; border-radius: 6px; }
-        .auth-tab-btn.active { background: var(--panel-header); color: #fff; }
-        .auth-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--panel-header); background: #1f163a; color: white; outline: none; }
-        .auth-submit-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: var(--accent-pink); color: white; margin-top: 15px; font-size: 1rem; }
-        .auth-submit-btn:hover { filter: brightness(1.1); }
-        .top-navbar { width: 100%; max-width: 1100px; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; background: var(--panel-bg); padding: 14px; border-radius: 12px; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .nav-chip { padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: none; cursor: pointer; color: white; background: var(--panel-header); display: flex; align-items: center; gap: 6px; }
-        .nav-chip.pink { background: var(--accent-pink); }
-        .nav-chip:hover { filter: brightness(1.1); }
-        .stats-display { margin-left: auto; display: flex; gap: 20px; font-size: 0.95rem; font-weight: bold; background: #1a1235; padding: 8px 18px; border-radius: 8px; border: 1px solid var(--panel-header); }
-        .main-container { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
-        @media (max-width: 900px) { .main-container { grid-template-columns: 1fr; } }
-        .left-column { display: flex; flex-direction: column; gap: 20px; }
-        .clicker-zone { background: var(--panel-bg); border-radius: 12px; padding: 40px 20px; text-align: center; border: 1px solid var(--panel-header); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 440px; position: relative; }
-        .zone-title { font-size: 1.9rem; font-weight: bold; margin-bottom: 5px; letter-spacing: 0.5px; }
-        .world-badge { background: linear-gradient(135deg, #ffc107, #fd7e14); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; margin-bottom: 25px; }
-        .coconut-container { position: relative; width: 210px; height: 210px; cursor: pointer; margin-bottom: 25px; user-select: none; }
-        .coconut-wrapper { width: 100%; height: 100%; transition: transform 0.05s ease-out; }
-        .coconut-body { width: 100%; height: 100%; background: radial-gradient(circle at 35% 35%, #8b5a2b, #4a2e16); border-radius: 50%; border: 6px solid #3c2410; box-shadow: 0 12px 25px rgba(0,0,0,0.6); animation: continuousSpin 35s linear infinite; }
-        .coconut-container.active-hit .coconut-wrapper { transform: scale(0.86) rotate(-4deg); }
-        @keyframes continuousSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .floating-text { position: absolute; color: var(--accent-cyan); font-weight: bold; font-size: 1.6rem; pointer-events: none; animation: floatDismiss 0.7s ease-out forwards; text-shadow: 0 2px 5px rgba(0,0,0,0.9); z-index: 10; }
-        @keyframes floatDismiss { 0% { opacity: 1; transform: translateY(0) scale(1.1); } 100% { opacity: 0; transform: translateY(-90px) scale(0.85); } }
-        .forge-multiplier-status { margin-top: 15px; font-size: 1.2rem; color: var(--accent-yellow); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .progress-bar-container { width: 80%; max-width: 400px; height: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-top: 15px; border: 1px solid var(--panel-header); overflow: hidden; }
-        .progress-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan)); transition: width 0.1s; }
-        .bottom-panel { background: var(--panel-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--panel-header); }
-        .panel-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid var(--panel-header); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .upgrades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 600px) { .upgrades-grid { grid-template-columns: 1fr; } }
-        .upgrade-card { background: #1a1235; border: 1px solid var(--panel-header); padding: 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s; }
-        .upgrade-card:hover { background: #221846; }
-        .upgrade-card.disabled { opacity: 0.35; cursor: not-allowed; }
-        .upgrade-card h4 { font-size: 0.95rem; color: #fff; }
-        .upgrade-card p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
-        .upgrade-cost { font-weight: bold; font-size: 0.9rem; color: var(--accent-yellow); background: var(--panel-header); padding: 4px 10px; border-radius: 6px; }
-        .right-column { display: flex; flex-direction: column; gap: 20px; }
-        .side-module { background: var(--panel-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--panel-header); }
-        .market-row { display: flex; align-items: center; justify-content: space-between; background: #1a1235; border: 1px solid var(--panel-header); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
-        .market-row:hover { background: #221846; }
-        .skin-preview-dot { width: 22px; height: 22px; border-radius: 50%; margin-right: 10px; }
-        .skin-info h5 { font-size: 0.9rem; }
-        .skin-info p { font-size: 0.75rem; color: var(--text-muted); }
-        .inventory-flex { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; min-height: 70px; background: #1a1235; padding: 12px; border-radius: 8px; border: 1px solid var(--panel-header); }
-        .inv-chip { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; cursor: pointer; border: 2px solid transparent; user-select: none; }
-        .inv-chip.selected { border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(0,229,255,0.5); transform: translateY(-2px); }
-        .forge-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #6f42c1, #d63384); border: none; border-radius: 8px; font-weight: bold; color: white; cursor: pointer; margin-top: 15px; font-size: 0.95rem; }
-        .forge-btn:disabled { opacity: 0.3; cursor: not-allowed; background: var(--panel-header); }
-        #boss-alert-zone { background: linear-gradient(90deg, #6f42c1, #e83e8c); border-radius: 8px; padding: 14px; margin-bottom: 15px; display: none; justify-content: space-between; align-items: center; box-shadow: 0 5px 20px rgba(232,62,140,0.4); width: 100%; max-width: 1100px; }
-        #admin-panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,8,22,0.95); z-index: 900; display: none; padding: 30px; overflow-y: auto; }
-        .admin-window { background: var(--panel-bg); max-width: 850px; margin: 4% auto; border-radius: 14px; border: 2px solid var(--accent-cyan); padding: 25px; box-shadow: 0 0 35px rgba(0,225,255,0.2); }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-header); padding-bottom: 12px; margin-bottom: 20px; }
-        .telemetry-rack { background: #110b24; border-radius: 8px; padding: 18px; border: 1px solid var(--panel-header); margin-bottom: 20px; }
-        .telemetry-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.85rem; }
-        .telemetry-value { font-family: monospace; color: var(--accent-cyan); font-weight: bold; }
-        .console-stream { background: #06040d; border-radius: 6px; height: 160px; padding: 12px; font-family: monospace; font-size: 0.75rem; color: #39ff14; overflow-y: auto; margin-top: 15px; border: 1px solid #1a1235; }
-        .admin-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .cmd-btn { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; background: var(--accent-cyan); color: #000; }
-        .cmd-btn.danger { background: #dc3545; color: white; }
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #e11d48;
+            z-index: 10;
+        }
+        header h1 { font-size: 1.5rem; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
+        header h1 span { color: #f59e0b; }
+        .controls { display: flex; gap: 15px; }
+        button {
+            background: #e11d48; color: white; border: none; padding: 8px 16px;
+            font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s;
+        }
+        button:hover { background: #be123c; transform: translateY(-1px); }
+        button.clear { background: #4b5563; }
+        button.clear:hover { background: #374151; }
+        #viewport {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(to bottom, #7dd3fc, #bae6fd);
+            overflow: hidden;
+            perspective: 1000px;
+        }
+        .beach-view {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 55%;
+            background: linear-gradient(to bottom, #4fc3f7 0%, #81d4fa 40%, #ffb74d 45%, #ffe082 50%, #00acc1 50%, #00838f 75%, #ffe082 75%, #ffcc80 100%);
+            box-shadow: inset 0 -20px 50px rgba(0,0,0,0.1);
+        }
+        .sun {
+            position: absolute;
+            top: 15%; left: 75%; width: 90px; height: 90px;
+            background: #fff9c4; border-radius: 50%;
+            box-shadow: 0 0 40px #fffde7;
+        }
+        .countertop {
+            position: absolute;
+            bottom: 0; left: -10%; width: 120%; height: 50%;
+            background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+            border-top: 4px solid #9ca3af;
+            transform: rotateX(25deg);
+            transform-origin: bottom center;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+        }
+        #sandbox {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 5;
+        }
+        .brick {
+            position: absolute;
+            width: 96px; height: 48px;
+            cursor: grab;
+            transform-style: preserve-3d;
+            transition: box-shadow 0.1s;
+        }
+        .brick:active { cursor: grabbing; }
+        .face { position: absolute; box-sizing: border-box; }
+        .front  { width: 96px; height: 35px; transform: translateZ(24px); filter: brightness(1); }
+        .back   { width: 96px; height: 35px; transform: rotateY(180deg) translateZ(24px); filter: brightness(0.8); }
+        .top    { width: 96px; height: 48px; transform: rotateX(90deg) translateZ(24px); filter: brightness(1.2); display: flex; flex-wrap: wrap; padding: 2px; align-content: space-around; justify-content: space-around;}
+        .left   { width: 48px; height: 35px; transform: rotateY(-90deg) translateZ(24px); filter: brightness(0.7); }
+        .right  { width: 48px; height: 35px; transform: rotateY(90deg) translateZ(72px); filter: brightness(0.9); }
+        .stud {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: inherit;
+            box-shadow: inset 1px 1px 3px rgba(255,255,255,0.6), inset -1px -1px 3px rgba(0,0,0,0.4);
+        }
+        .red .face    { background: #dc2626; border: 1px solid #b91c1c; }
+        .blue .face   { background: #2563eb; border: 1px solid #1d4ed8; }
+        .yellow .face { background: #f59e0b; border: 1px solid #d97706; }
+        .green .face  { background: #16a34a; border: 1px solid #15803d; }
     </style>
 </head>
 <body>
-
-    <div id="auth-portal">
-        <div class="auth-box">
-            <h2 id="auth-title">Cloud Save Authentication</h2>
-            <div class="auth-tabs">
-                <button id="tab-login" class="auth-tab-btn active" onclick="toggleAuthTab('login')">Sign In</button>
-                <button id="tab-register" class="auth-tab-btn" onclick="toggleAuthTab('register')">Register Profile</button>
-            </div>
-            <input type="text" id="auth-username" class="auth-input" placeholder="Cluster Username">
-            <input type="password" id="auth-password" class="auth-input" placeholder="Secure Password">
-            <button class="auth-submit-btn" onclick="executeAccountAuth()">Initialize Core Loop</button>
-            <button class="auth-tab-btn" style="margin-top:10px; width:100%;" onclick="bypassAsGuest()">Bypass Profile Access (Play Local Guest)</button>
+    <header>
+        <h1>Lego <span>Simulator</span></h1>
+        <div class="controls">
+            <button onclick="spawnBrick('red')">+ Red Brick</button>
+            <button onclick="spawnBrick('blue')">+ Blue Brick</button>
+            <button onclick="spawnBrick('yellow')">+ Yellow Brick</button>
+            <button onclick="spawnBrick('green')">+ Green Brick</button>
+            <button class="clear" onclick="clearSandbox()">Clear Counter</button>
         </div>
+    </header>
+    <div id="viewport">
+        <div class="beach-view"><div class="sun"></div></div>
+        <div class="countertop"></div>
+        <div id="sandbox"></div>
     </div>
-
-    <div class="top-navbar">
-        <button class="nav-chip" id="active-profile-badge">👤 Guest Node Cluster</button>
-        <button class="nav-chip pink" onclick="commitCloudSave()">💾 Synchronize Database Save</button>
-        <button class="nav-chip" onclick="handleSignOutRoute()">🚪 Logout Session</button>
-        <button class="nav-chip" id="admin-dashboard-trigger" style="display: none; background: var(--tier-mythic);" onclick="toggleAdminView(true)">⚙️ LEGO Server Rack Telemetry</button>
-        <div class="stats-display">
-            <div>🥥 Coconuts: <span id="metric-coconuts">0</span></div>
-            <div>⚡ CPS: <span id="metric-cps">0</span></div>
-        </div>
-    </div>
-
-    <div id="boss-alert-zone">
-        <div class="boss-title">⚠️ THERMAL RUNAWAY PROCESS ENGINE BURST EVENT</div>
-        <div style="font-size:0.85rem;">Inject <span id="boss-target-metric" style="font-weight:bold; color:var(--accent-yellow);">0</span> coconuts immediately to stabilize CPU arrays!</div>
-        <div id="boss-timer-clock" style="font-family:monospace; font-size:1.1rem; background:rgba(0,0,0,0.4); padding:2px 8px; border-radius:4px;">00:20</div>
-    </div>
-    
-    <div style="width:100%; max-width:1100px; display:none;" id="boss-alert-zone">
-        <div class="progress-bar-container" style="width:100%; max-width:none; margin-bottom:15px;"><div class="progress-bar-fill" id="progress-bar-fill-node"></div></div>
-    </div>
-
-    <div class="main-container">
-        <div class="left-column">
-            <div class="clicker-zone">
-                <div class="world-badge">World Level 4 ➔ World Level 5 (Unlock Core: 10.0Qi)</div>
-                <h1 class="zone-title" id="player-banner-title">Yaris' Squishy Clicker Matrix</h1>
-                <div class="forge-multiplier-status" id="forge-multiplier-label">Forged Eternal #0 (x1.00 Matrix Weight)</div>
-                <div id="equipped-skin-label" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:20px;">Active Surface Coating: Standard Husk Layer</div>
-                
-                <div class="coconut-container" id="coconut-click-target" onclick="processPrimaryClickEvent(event)">
-                    <div class="coconut-wrapper">
-                        <div class="coconut-body" id="rendered-coconut-canvas"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bottom-panel">
-                <div class="panel-title">Standard Processing System Multipliers</div>
-                <div class="upgrades-grid" id="upgrades-grid-container"></div>
-            </div>
-        </div>
-
-        <div class="right-column">
-            <div class="side-module">
-                <div class="panel-title">
-                    <span>🔄 Rotational Marketplace</span>
-                    <span id="market-timer-display" style="font-family:monospace; color:var(--accent-cyan);">01:00</span>
-                </div>
-                <div id="market-offers-container"></div>
-            </div>
-
-            <div class="side-module">
-                <div class="panel-title">Vault Inventory Allocation</div>
-                <p style="font-size:0.75rem; color:var(--text-muted);">Check between 8 to 12 matching duplicates inside your vault to fire a structural reforge run.</p>
-                <div class="inventory-flex" id="inventory-chips-container"></div>
-                <button class="forge-btn" id="forge-execution-trigger" disabled onclick="executeVaultForgeSequence()">⚒️ Execute Matrix Fusion</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="admin-panel-overlay">
-        <div class="admin-window">
-            <div class="admin-header">
-                <h2>⚙️ Enterprise Liquid-Cooled AMD Ryzen 9 9950X LEGO Server Telemetry</h2>
-                <button class="nav-chip" onclick="toggleAdminView(false)">Exit System Deck</button>
-            </div>
-            <div class="telemetry-rack">
-                <div style="font-weight:bold; font-size:0.9rem; margin-bottom:10px; border-bottom:1px solid #221846; padding-bottom:5px;">Hardware Node Array Specs</div>
-                <div class="telemetry-row"><span>Architecture Architecture Map:</span><span class="telemetry-value">16 Physical Cores / 32 Computational Threads</span></div>
-                <div class="telemetry-row"><span>Core Boost Clock Status:</span><span class="telemetry-value" id="cpu-clock-node">5.70 GHz Precision Boost</span></div>
-                <div class="telemetry-row"><span>Integrated Core Cluster Load:</span><span class="telemetry-value" id="cpu-load-node">1.8 %</span></div>
-                <div class="telemetry-row"><span>AIO Fluid Cooling Temperature:</span><span class="telemetry-value" id="cpu-temp-node">32.5 °C</span></div>
-                <div class="telemetry-row"><span>Infrastructure Voltage Draw:</span><span class="telemetry-value" id="cpu-power-node">68 Watts</span></div>
-                <div class="console-stream" id="admin-console-logs-box">[DECRYPTION COMPLETED] - Security tokens assigned to admin clear session.<br></div>
-            </div>
-            <div class="admin-actions">
-                <button class="cmd-btn" onclick="injectAdminCoconuts(500000)">Inject +500K Coconuts</button>
-                <button class="cmd-btn" onclick="injectAdminCoconuts(25000000)">Inject +25M Coconuts</button>
-                <button class="cmd-btn" onclick="adminTriggerInstantCrisis()">Force System Stress Run</button>
-                <button class="cmd-btn danger" onclick="purgeServerAccountCache()">Flush Central Server Accounts</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        let currentAuthMode = 'login';
-        let activeUserSessionKey = null;
-        let gameState = {username: 'Guest_Local', coconuts: 0, cps: 0, cpc: 1, forgeCount: 0, forgeMultiplier: 1.0, equippedSkin: 'default', inventory: [], upgrades: {click_booster: { label: 'Click Matrix Booster', count: 0, cost: 15, base: 15, cpc: 1, cps: 0 }, cracking_node: { label: 'Automated Cracking Node', count: 0, cost: 100, base: 100, cpc: 0, cps: 5 }, steam_pipe: { label: 'Steam Pipeline Protocol', count: 0, cost: 1200, base: 1200, cpc: 0, cps: 40 }, quantum_array: { label: 'LEGO Quantum Engine Array', count: 0, cost: 16000, base: 16000, cpc: 10, cps: 350 }}};
-        const SKIN_RARITY_MATRIX = {'default': { name: 'Standard Husk Layer', color: 'radial-gradient(circle at 35% 35%, #8b5a2b, #4a2e16)', border: '#3c2410', cpcM: 1, cpsM: 1, bg: 'var(--tier-common)' }, 'space_blue': { name: 'Classic Space Blue Coating', color: 'radial-gradient(circle at 35% 35%, #0056b3, #001f4d)', border: '#00ffff', cpcM: 2, cpsM: 1.2, bg: 'var(--tier-epic)' }, 'octan_green': { name: 'Octan Synergy Coating', color: 'radial-gradient(circle at 35% 35%, #28a745, #114e1e)', border: '#ffc107', cpcM: 1.5, cpsM: 2, bg: 'var(--tier-rare)' }, 'cyber_glow': { name: 'Neon Cyberpunk Finish', color: 'radial-gradient(circle at 35% 35%, #e83e8c, #4d0527)', border: '#00ffff', cpcM: 3, cpsM: 3, bg: 'var(--tier-mythic)' }, 'solid_gold': { name: 'Solid Golden Brick Plating', color: 'radial-gradient(circle at 35% 35%, #ffda44, #856404)', border: '#ffffff', cpcM: 5, cpsM: 5, bg: 'var(--tier-eternal)' }};
-        let activeMarketKeys = []; let marketCountdownTimer = 60; let activeCrisisEvent = null;
-
-        function toggleAuthTab(mode) { currentAuthMode = mode; document.getElementById('tab-login').className = mode === 'login' ? 'auth-tab-btn active' : 'auth-tab-btn'; document.getElementById('tab-register').className = mode === 'register' ? 'auth-tab-btn active' : 'auth-tab-btn'; document.getElementById('auth-title').innerText = mode === 'login' ? 'Cloud Save Authentication' : 'Create Cloud Server Account'; }
-        function executeAccountAuth() { const user = document.getElementById('auth-username').value.trim(); const pass = document.getElementById('auth-password').value.trim(); if (!user || !pass) { return alert('Username and Password matrices cannot be empty.'); } let accountsDb = JSON.parse(localStorage.getItem('server_accounts_mock_db')) || {}; if (currentAuthMode === 'register') { if (accountsDb[user]) { return alert('Account name already assigned.'); } accountsDb[user] = { password: pass, saveData: null }; localStorage.setItem('server_accounts_mock_db', JSON.stringify(accountsDb)); alert('Account registered!'); toggleAuthTab('login'); return; } if (currentAuthMode === 'login') { if (user === 'Yaris' && pass === 'sillypeach600') { activeUserSessionKey = 'Yaris'; gameState.username = 'Yaris'; document.getElementById('admin-dashboard-trigger').style.display = 'inline-block'; document.getElementById('active-profile-badge').innerText = '👑 Admin Session: Yaris'; document.getElementById('auth-portal').style.display = 'none'; loadCloudSaveContext(); initializeProcessingEngines(); return; } if (!accountsDb[user] || accountsDb[user].password !== pass) { return alert('Credentials mismatch.'); } activeUserSessionKey = user; gameState.username = user; document.getElementById('active-profile-badge').innerText = `👤 Node User: ${user}`; document.getElementById('player-banner-title').innerText = `${user}'s Squishy Clicker`; document.getElementById('auth-portal').style.display = 'none'; loadCloudSaveContext(); initializeProcessingEngines(); } }
-        function bypassAsGuest() { document.getElementById('auth-portal').style.display = 'none'; initializeProcessingEngines(); }
-        function initializeProcessingEngines() { renderUpgradesCanvas(); randomizeMarketOffers(); renderVaultInventoryChips(); refreshHUDDisplays(); setInterval(() => { executePassiveGenerationStep(); executeMarketplaceTimerTick(); simulateHardwareTelemetry(); if (activeCrisisEvent) executeCrisisTimerTick(); if (Math.random() < 0.015) triggerRandomCoreCrisis(); }, 1000); }
-        function calculateActiveYieldOutputs() { let rCpc = 1; let rCps = 0; for (let key in gameState.upgrades) { rCpc += gameState.upgrades[key].count * gameState.upgrades[key].cpc; rCps += gameState.upgrades[key].count * gameState.upgrades[key].cps; } const p = SKIN_RARITY_MATRIX[gameState.equippedSkin] || SKIN_RARITY_MATRIX['default']; gameState.cpc = Math.floor(rCpc * p.cpcM * gameState.forgeMultiplier); gameState.cps = Math.floor(rCps * p.cpsM * gameState.forgeMultiplier); }
-        function processPrimaryClickEvent(e) { calculateActiveYieldOutputs(); gameState.coconuts += gameState.cpc; if (activeCrisisEvent) { activeCrisisEvent.progressAccumulated += gameState.cpc; if (activeCrisisEvent.progressAccumulated >= activeCrisisEvent.targetGoal) resolveCrisisSuccessState(); } const t = document.getElementById('coconut-click-target'); t.classList.remove('active-hit'); void t.offsetWidth; t.classList.add('active-hit'); setTimeout(() => t.classList.remove('active-hit'), 50); const f = document.createElement('div'); f.className = 'floating-text'; f.innerText = `+${gameState.cpc}`; f.style.left = `${Math.random() * 50 + 75}px`; f.style.top = `${Math.random() * 30 + 30}px`; t.appendChild(f); setTimeout(() => f.remove(), 650); refreshHUDDisplays(); }
-        function renderUpgradesCanvas() { const container = document.getElementById('upgrades-grid-container'); container.innerHTML = ''; for (let k in gameState.upgrades) { const spec = gameState.upgrades[k]; const card = document.createElement('div'); card.className = `upgrade-card ${gameState.coconuts < spec.cost ? 'disabled' : ''}`; card.onclick = () => executeStructurePurchase(k); card.innerHTML = `<div><h4>${spec.label}</h4><p>Level: ${spec.count} | +${spec.cpc} CPC / +${spec.cps} CPS</p></div><div class="upgrade-cost">${Math.floor(spec.cost)}</div>`; container.appendChild(card); } }
-        function executeStructurePurchase(key) { const spec = gameState.upgrades[key]; if (gameState.coconuts >= spec.cost) { gameState.coconuts -= spec.cost; spec.count++; spec.cost = Math.floor(spec.base * Math.pow(1.15, spec.count)); calculateActiveYieldOutputs(); renderUpgradesCanvas(); refreshHUDDisplays(); logAdminConsole(`Purchased upgrade: ${spec.label}`); } }
-        function randomizeMarketOffers() { marketCountdownTimer = 60; activeMarketKeys = []; const pool = Object.keys(SKIN_RARITY_MATRIX); while (activeMarketKeys.length < 3) { const c = pool[Math.floor(Math.random() * pool.length)]; if (!activeMarketKeys.includes(c)) activeMarketKeys.push(c); } const box = document.getElementById('market-offers-container'); box.innerHTML = ''; activeMarketKeys.forEach(k => { const target = SKIN_RARITY_MATRIX[k]; const price = Math.floor(200 + (gameState.forgeCount * 450) + Math.random() * 150); const row = document.createElement('div'); row.className = 'market-row'; row.onclick = () => processMarketPurchase(k, price); row.innerHTML = `<div style="display:flex; align-items:center;"><div class="skin-preview-dot" style="background:${target.color}; border:2px solid ${target.border}"></div><div class="skin-info"><h5>${target.name}</h5><p style="color:${target.border}">Mod: CPC x${target.cpcM} / CPS x${target.cpsM}</p></div></div><div class="upgrade-cost">${price}</div>`; box.appendChild(row); }); }
-        function executeMarketplaceTimerTick() { marketCountdownTimer--; if (marketCountdownTimer <= 0) randomizeMarketOffers(); const min = Math.floor(marketCountdownTimer / 60); const sec = marketCountdownTimer % 60; document.getElementById('market-timer-display').innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; }
-        function processMarketPurchase(key, price) { if (gameState.coconuts >= price) { gameState.coconuts -= price; gameState.inventory.push(key); renderVaultInventoryChips(); refreshHUDDisplays(); renderUpgradesCanvas(); } else { alert("Insufficient funds."); } }
-        function renderVaultInventoryChips() { const box = document.getElementById('inventory-chips-container'); box.innerHTML = ''; gameState.inventory.forEach((skKey, index) => { const config = SKIN_RARITY_MATRIX[skKey] || SKIN_RARITY_MATRIX['default']; const b = document.createElement('div'); b.className = 'inv-chip'; b.style.backgroundColor = config.bg; b.innerText = config.name.split(' ').slice(0,2).join(' '); b.onclick = () => { b.classList.toggle('selected'); evaluateForgeButtonStates(); }; b.dataset.index = index; b.dataset.skin = skKey; box.appendChild(b); }); evaluateForgeButtonStates(); }
-        function evaluateForgeButtonStates() { const c = document.querySelectorAll('#inventory-chips-container .inv-chip.selected'); const btn = document.getElementById('forge-execution-trigger'); if (c.length >= 8 && c.length <= 12) { btn.disabled = false; btn.innerText = `⚒️ Fuse Matrix Component Array (${c.length} Staged)`; } else { btn.disabled = true; btn.innerText = `⚒️ Execute Matrix Fusion (Need 8-12)`; } }
-        function executeVaultForgeSequence() { const targets = document.querySelectorAll('#inventory-chips-container .inv-chip.selected'); if (targets.length >= 8 && targets.length <= 12) { let idxs = []; let skins = []; targets.forEach(el => { idxs.push(parseInt(el.dataset.index)); skins.push(el.dataset.skin); }); idxs.sort((x, y) => y - x).forEach(i => gameState.inventory.splice(i, 1)); gameState.equippedSkin = skins[0]; gameState.forgeCount += 1; gameState.forgeMultiplier += 0.25; calculateActiveYieldOutputs(); renderVaultInventoryChips(); refreshHUDDisplays(); renderUpgradesCanvas(); const up = SKIN_RARITY_MATRIX[gameState.equippedSkin]; const r = document.getElementById('rendered-coconut-canvas'); r.style.background = up.color; r.style.borderColor = up.border; document.getElementById('equipped-skin-label').innerText = `Active Surface Coating: ${up.name}`; alert(`Forge fusion validated! Leveled up to Tier #${gameState.forgeCount}.`); } }
-        function executePassiveGenerationStep() { calculateActiveYieldOutputs(); if (gameState.cps > 0) { gameState.coconuts += gameState.cps; if (activeCrisisEvent) { activeCrisisEvent.progressAccumulated += gameState.cps; if (activeCrisisEvent.progressAccumulated >= activeCrisisEvent.targetGoal) resolveCrisisSuccessState(); } refreshHUDDisplays(); } const nodes = document.querySelectorAll('.upgrade-card'); let i = 0; for (let k in gameState.upgrades) { if (nodes[i]) { if (gameState.coconuts >= gameState.upgrades[k].cost) nodes[i].classList.remove('disabled'); else nodes[i].classList.add('disabled'); } i++; } }
-        function triggerRandomCoreCrisis() { if (activeCrisisEvent) return; calculateActiveYieldOutputs(); const goal = Math.max(200, Math.floor(gameState.cps * 22 + Math.random() * 450)); activeCrisisEvent = { targetGoal: goal, progressAccumulated: 0, timeLeft: 20 }; document.getElementById('boss-target-metric').innerText = goal; document.getElementById('boss-timer-clock').innerText = "00:20"; document.getElementById('boss-alert-zone').style.display = 'flex'; }
-        function adminTriggerInstantCrisis() { toggleAdminView(false); activeCrisisEvent = null; triggerRandomCoreCrisis(); }
-        function executeCrisisTimerTick() { if (!activeCrisisEvent) return; activeCrisisEvent.timeLeft--; document.getElementById('boss-timer-clock').innerText = `00:${activeCrisisEvent.timeLeft.toString().padStart(2, '0')}`; if (activeCrisisEvent.timeLeft <= 0) { const fine = Math.floor(gameState.coconuts * 0.14); gameState.coconuts -= fine; if (gameState.coconuts < 0) gameState.coconuts = 0; alert(`Containment limit breached! Lost ${fine} coconuts.`); terminateCrisisBanner(); } }
-        function resolveCrisisSuccessState() { const reward = Math.floor(activeCrisisEvent.targetGoal * 0.55); gameState.coconuts += reward; alert(`Thermal levels normal. Payout issued: +${reward}`); terminateCrisisBanner(); }
-        function terminateCrisisBanner() { activeCrisisEvent = null; document.getElementById('boss-alert-zone').style.display = 'none'; refreshHUDDisplays(); renderUpgradesCanvas(); }
-        function simulateHardwareTelemetry() { if (gameState.username !== 'Yaris') return; document.getElementById('cpu-clock-node').innerText = `${(5.70 + (Math.random() * 0.04 - 0.02)).toFixed(2)} GHz Precision Boost`; let load = 2.1 + (gameState.cps / 1600) + (Math.random() * 1.1); let temp = 32.0 + (load * 0.15) + (Math.random() * 0.2); if (activeCrisisEvent) { load += 42.1; temp += 24.8; } document.getElementById('cpu-load-node').innerText = `${Math.min(100, load).toFixed(1)} %`; document.getElementById('cpu-temp-node').innerText = `${temp.toFixed(1)} °C`; document.getElementById('cpu-power-node').innerText = `${Math.floor(65 + (load * 1.2))} Watts`; }
-        function toggleAdminView(status) { document.getElementById('admin-panel-overlay').style.display = status ? 'block' : 'none'; }
-        function injectAdminCoconuts(amount) { gameState.coconuts += amount; refreshHUDDisplays(); renderUpgradesCanvas(); logAdminConsole(`Admin script forced +${amount} injection.`); }
-        function logAdminConsole(msg) { const b = document.getElementById('admin-console-logs-box'); if (b) { b.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`; b.scrollTop = b.scrollHeight; } }
-        function refreshHUDDisplays() { document.getElementById('metric-coconuts').innerText = Math.floor(gameState.coconuts).toLocaleString(); document.getElementById('metric-cps').innerText = Math.floor(gameState.cps).toLocaleString(); document.getElementById('forge-multiplier-label').innerText = `Forged Eternal #${gameState.forgeCount} (x${gameState.forgeMultiplier.toFixed(2)} Matrix Weight)`; }
-        function commitCloudSave() { if (!activeUserSessionKey) { return alert('Guests cannot use cloud saving. Register an account!'); } let accountsDb = JSON.parse(localStorage.getItem('server_accounts_mock_db')) || {}; if (accountsDb[activeUserSessionKey]) { accountsDb[activeUserSessionKey].saveData = JSON.stringify(gameState); localStorage.setItem('server_accounts_mock_db', JSON.stringify(accountsDb)); alert('Data synchronized to user cloud account!'); } }
-        function loadCloudSaveContext() { if (!activeUserSessionKey) return; let accountsDb = JSON.parse(localStorage.getItem('server_accounts_mock_db')) || {}; const rec = accountsDb[activeUserSessionKey]; if (rec && rec.saveData) { try { const parsed = JSON.parse(rec.saveData); if (parsed) { if (parsed.hasOwnProperty('coconuts')) gameState.coconuts = parsed.coconuts; if (parsed.hasOwnProperty('forgeCount')) gameState.forgeCount = parsed.forgeCount; if (parsed.hasOwnProperty('forgeMultiplier')) gameState.forgeMultiplier = parsed.forgeMultiplier; if (parsed.hasOwnProperty('equippedSkin')) gameState.equippedSkin = parsed.equippedSkin; if (parsed.hasOwnProperty('inventory')) gameState.inventory = parsed.inventory; if (parsed.upgrades) { for (let k in gameState.upgrades) { if (parsed.upgrades[k]) { gameState.upgrades[k].count = parsed.upgrades[k].count || 0; gameState.upgrades[k].cost = parsed.upgrades[k].cost || gameState.upgrades[k].base; } } } const up = SKIN_RARITY_MATRIX[gameState.equippedSkin] || SKIN_RARITY_MATRIX['default']; const r = document.getElementById('rendered-coconut-canvas'); r.style.background = up.color; r.style.borderColor = up.border; document.getElementById('equipped-skin-label').innerText = `Active Surface Coating: ${up.name}`; } } catch(e) {} } calculateActiveYieldOutputs(); }
-        function handleSignOutRoute() { if(confirm("Log out of session?")) { location.reload(); } }
-        function purgeServerAccountCache() { if (confirm("Clear server database records permanently?")) { localStorage.removeItem('server_accounts_mock_db'); location.reload(); } }
+        const sandbox = document.getElementById('sandbox');
+        let activeBrick = null;
+        let offsetX = 0;
+        let offsetY = 0;
+        const SNAP_X = 24; 
+        const SNAP_Y = 12;
+        function spawnBrick(color) {
+            const brick = document.createElement('div');
+            brick.className = `brick ${color}`;
+            const faces = ['front', 'back', 'top', 'left', 'right'];
+            faces.forEach(f => {
+                const face = document.createElement('div');
+                face.className = `face ${f}`;
+                if (f === 'top') {
+                    for(let i=0; i<8; i++) {
+                        const stud = document.createElement('div');
+                        stud.className = 'stud';
+                        face.appendChild(stud);
+                    }
+                }
+                brick.appendChild(face);
+            });
+            brick.style.left = '150px';
+            brick.style.top = '400px';
+            brick.addEventListener('mousedown', startDrag);
+            brick.addEventListener('touchstart', startDrag, { passive: false });
+            sandbox.appendChild(brick);
+        }
+        function startDrag(e) {
+            e.preventDefault();
+            activeBrick = e.currentTarget;
+            sandbox.appendChild(activeBrick);
+            const clientX = e.type.startsWith('touch') ? e.touches.clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches.clientY : e.clientY;
+            offsetX = clientX - activeBrick.offsetLeft;
+            offsetY = clientY - activeBrick.offsetTop;
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag, { passive: false });
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+        function drag(e) {
+            if (!activeBrick) return;
+            e.preventDefault();
+            const clientX = e.type.startsWith('touch') ? e.touches.clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches.clientY : e.clientY;
+            let x = clientX - offsetX;
+            let y = clientY - offsetY;
+            const minTop = window.innerHeight * 0.45;
+            const maxTop = window.innerHeight - 80;
+            if (y < minTop) y = minTop;
+            if (y > maxTop) y = maxTop;
+            x = Math.round(x / SNAP_X) * SNAP_X;
+            y = Math.round(y / SNAP_Y) * SNAP_Y;
+            activeBrick.style.left = `${x}px`;
+            activeBrick.style.top = `${y}px`;
+        }
+        function stopDrag() {
+            activeBrick = null;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+        }
+        function clearSandbox() {
+            sandbox.innerHTML = '';
+        }
+        window.onload = () => {
+            spawnBrick('red');
+            setTimeout(() => spawnBrick('blue'), 100);
+            setTimeout(() => spawnBrick('yellow'), 200);
+        };
     </script>
 </body>
 </html>
