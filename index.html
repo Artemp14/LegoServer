@@ -3,255 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEGO Brick Simulator | High-Res Beach Edition</title>
+    <title>Custom Eaglercraft Client Web Loader</title>
     <style>
-        :root {
-            --menu-bg: rgba(20, 16, 36, 0.95);
-            --menu-border: rgba(111, 66, 193, 0.4);
-            --accent-pink: #e83e8c;
-            --accent-cyan: #00e5ff;
-            --text-main: #ffffff;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #05040a; color: var(--text-main); }
-        
-        #realistic-blackout { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; display: none; justify-content: center; align-items: center; text-align: center; }
-        #realistic-blackout div { max-width: 450px; padding: 25px; }
-        #realistic-blackout h1 { font-size: 2.2rem; margin-bottom: 12px; color: #333; letter-spacing: 1px; }
-        #realistic-blackout p { color: #1a1a1a; font-family: monospace; font-size: 0.95rem; line-height: 1.5; }
-        .blackout-btn { margin-top: 25px; padding: 10px 20px; background: #222; border: 1px solid #444; border-radius: 6px; color: #666; cursor: pointer; font-weight: bold; }
-        .blackout-btn:hover { background: #333; color: #888; }
-
-        #simulation-environment { 
-            width: 100%; 
-            height: 100%; 
-            position: relative; 
-            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat center center; 
-            background-size: cover; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            perspective: 1200px;
-            user-select: none;
-        }
-        
-        #camera-perspective-rig { 
-            position: relative; 
-            transform-style: preserve-3d; 
-            width: 400px; 
-            height: 400px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            transform: rotateX(15deg) rotateY(0deg);
-        }
-
-        .lego-brick-3d {
-            position: relative;
-            width: 160px;
-            height: 100px;
-            background: #d32f2f; 
-            border-radius: 4px;
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.4), 0 20px 40px rgba(0,0,0,0.6);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 10px;
-            transform-style: preserve-3d;
-        }
-        .lego-stud {
-            width: 32px;
-            height: 12px;
-            background: #b71c1c;
-            border-radius: 50%;
-            position: absolute;
-            top: -12px;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .stud-1 { left: 15px; } .stud-2 { left: 64px; } .stud-3 { left: 113px; }
-
-        #control-panel-menu {
-            position: fixed;
-            top: 20px;
-            left: -340px;
-            width: 320px;
-            height: calc(100% - 40px);
-            background: var(--menu-bg);
-            border: 1px solid var(--menu-border);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            z-index: 1500;
-            padding: 25px;
-            transition: left 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-            display: flex;
-            flex-direction: column;
-        }
-        #control-panel-menu.menu-visible { left: 20px; }
-        
-        .menu-toggle-btn {
-            position: absolute;
-            right: -55px;
-            top: 15px;
-            width: 45px;
-            height: 45px;
-            background: var(--menu-bg);
-            border: 1px solid var(--menu-border);
-            border-radius: 8px;
-            color: white;
-            font-size: 1.3rem;
-            cursor: pointer;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-        
-        .menu-title { font-size: 1.2rem; font-weight: bold; border-bottom: 2px solid var(--menu-border); padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .menu-section { margin-bottom: 25px; }
-        .menu-label { font-size: 0.8rem; text-transform: uppercase; color: #8c82a6; font-weight: bold; margin-bottom: 8px; display: block; }
-        
-        .action-btn { width: 100%; padding: 12px; background: #3a2a68; border: 1px solid var(--menu-border); border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: background 0.2s; margin-bottom: 8px; text-align: left; font-size: 0.85rem; }
-        .action-btn:hover { background: #4c3785; }
-        .action-btn.active { background: var(--accent-pink); border-color: var(--accent-pink); }
-
-        .auth-input { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 6px; border: 1px solid #3a2a68; background: #15102a; color: white; outline: none; font-size: 0.85rem; }
-        
-        .hud-timer-overlay { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: var(--menu-bg); border: 1px solid var(--menu-border); border-radius: 8px; font-family: monospace; font-size: 1.1rem; color: var(--accent-cyan); font-weight: bold; z-index: 100; text-shadow: 0 0 8px rgba(0,229,255,0.3); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-
-        #admin-telemetry-panel { position: fixed; bottom: -400px; left: 50%; transform: translateX(-50%); width: 700px; background: var(--menu-bg); border: 2px solid var(--accent-cyan); border-radius: 12px 12px 0 0; padding: 20px; z-index: 1600; transition: bottom 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); box-shadow: 0 -10px 40px rgba(0,225,255,0.15); }
-        #admin-telemetry-panel.panel-visible { bottom: 0; }
-        .telemetry-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem; font-family: monospace; }
-        .telemetry-val { color: var(--accent-cyan); font-weight: bold; }
-        .console-box { background: #06040d; border-radius: 4px; height: 110px; padding: 10px; font-family: monospace; font-size: 0.7rem; color: #39ff14; overflow-y: auto; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #222;
+        }
+        h1 { color: #55ff55; margin-bottom: 10px; }
+        p { color: #aaaaaa; font-size: 16px; line-height: 1.5; }
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #00aa00;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: #00cc00; }
+        .config-preview {
+            margin-top: 20px;
+            text-align: left;
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #00ff00;
+        }
     </style>
 </head>
 <body>
-
-    <div id="realistic-blackout" onclick="setSimulationViewMode('visual')">
-        <div>
-            <h1>SENSORY SHUTDOWN</h1>
-            <p>An inanimate plastic LEGO brick does not possess visual receptors, nerves, or sensory processing nodes. The universe around you is reduced to infinite silence and dark space.</p>
-            <button class="blackout-btn" onclick="setSimulationViewMode('visual')">Restore Visual Environment</button>
-        </div>
-    </div>
-
-    <div id="control-panel-menu">
-        <button class="menu-toggle-btn" onclick="toggleControlMenuPanel()">☰</button>
-        <div class="menu-title">Simulation Deck</div>
+    <div class="container">
+        <h1>Custom Web Client Template</h1>
+        <p>This is a custom landing page configured for GitHub Pages deployment. Full-scale Eaglercraft builds require large pre-compiled engine files (like <code>classes.js</code> and assets) that exceed standard single-file scripts.</p>
         
-        <div class="menu-section">
-            <span class="menu-label">Perception Mode</span>
-            <button class="action-btn active" id="btn-mode-vis" onclick="setSimulationViewMode('visual')">👁️ Environmental View</button>
-            <button class="action-btn" id="btn-mode-real" onclick="setSimulationViewMode('realistic')">🕶️ Realistic Brick View</button>
+        <p>To run your multiplayer environment, ensure your workspace references your WebSocket server arrays in your configuration block below.</p>
+        
+        <div class="config-preview">
+            // Configuration Arrays Template<br>
+            const eaglercraftOpts = {<br>
+            &nbsp;&nbsp;container: "game_canvas",<br>
+            &nbsp;&nbsp;assetsURI: "assets.epk",<br>
+            &nbsp;&nbsp;servers: [<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;{ addr: "wss://archmc.net", name: "ArchMC" }<br>
+            &nbsp;&nbsp;]<br>
+            };
         </div>
 
-        <div class="menu-section" id="auth-section-gate">
-            <span class="menu-label">Hardware Authentication</span>
-            <input type="text" id="override-user" class="auth-input" placeholder="Server Operator Name">
-            <input type="password" id="override-pass" class="auth-input" placeholder="Security Handshake Clear Key">
-            <button class="action-btn" style="background:var(--accent-pink); border-color:var(--accent-pink); text-align:center;" onclick="executeServerTelemetryHandshake()">Verify Master Core</button>
-        </div>
-
-        <div class="menu-section" id="admin-actions-gate" style="display:none;">
-            <span class="menu-label">Operator Overrides</span>
-            <button class="action-btn" style="border-color:var(--accent-cyan); color:var(--accent-cyan);" onclick="toggleAdminPanelDeck(true)">📊 Open Ryzen Telemetry</button>
-            <button class="action-btn" onclick="injectTimeTokens(3600)">⚡ Fast-Forward +1 Hour</button>
-        </div>
+        <a href="https://github.com/lax1dude/eaglercraftx-1.8" class="btn" target="_blank">Get Engine Source Files</a>
     </div>
-
-    <div class="hud-timer-overlay">
-        Time Existing: <span id="time-display-clock">0</span>s
-    </div>
-
-    <div id="simulation-environment">
-        <div id="camera-perspective-rig">
-            <div class="lego-brick-3d">
-                <div class="lego-stud stud-1"></div>
-                <div class="lego-stud stud-2"></div>
-                <div class="lego-stud stud-3"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="admin-telemetry-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #3a2a68; padding-bottom:6px; margin-bottom:12px;">
-            <h3 style="font-size:0.95rem; color:var(--accent-cyan);">📊 Liquid-Cooled AMD Ryzen 9 9950X LEGO Server Node logs</h3>
-            <button class="hud-btn" style="padding:4px 10px; background:#3a2a68; border:none; border-radius:4px; color:white; font-size:0.75rem; cursor:pointer;" onclick="toggleAdminPanelDeck(false)">Close Deck</button>
-        </div>
-        <div class="telemetry-row"><span>Processor Engine Model:</span><span class="telemetry-val">AMD Ryzen 9 9950X (16 Cores / 32 Threads)</span></div>
-        <div class="telemetry-row"><span>Clock Speed Scaling:</span><span class="telemetry-val" id="cpu-clock">5.70 GHz Boost</span></div>
-        <div class="telemetry-row"><span>Package Workspace Load:</span><span class="telemetry-val" id="cpu-load">0.8 %</span></div>
-        <div class="telemetry-row"><span>AIO Cooling Fluid Baseline:</span><span class="telemetry-val" id="cpu-temp">32.4 °C</span></div>
-        <div class="telemetry-row"><span>Chassis Total Power Draw:</span><span class="telemetry-val" id="cpu-power">65 W</span></div>
-        <div class="console-box" id="console-logs-pane">[DECRYPTION VERIFIED] - Telemetry matrix streams established correctly.<br></div>
-    </div>
-
-    <script>
-        let runtimeState = { timeElapsed: 0, viewMode: 'visual', isAdminAuthenticated: false };
-        let isOrbitActive = false; let trackMouseCoords = { x: 0, y: 0 }; let viewportAngles = { x: 15, y: 0 };
-        const rigNode = document.getElementById('camera-perspective-rig');
-
-        function toggleControlMenuPanel() { document.getElementById('control-panel-menu').classList.toggle('menu-visible'); }
-
-        function setSimulationViewMode(targetMode) {
-            runtimeState.viewMode = targetMode;
-            if (targetMode === 'realistic') {
-                document.getElementById('realistic-blackout').style.display = 'flex';
-                document.getElementById('btn-mode-real').classList.add('active');
-                document.getElementById('btn-mode-vis').classList.remove('active');
-                writeTerminalLog("[STATE INCIDENT] Environment obscured. Sensory paths truncated.");
-            } else {
-                document.getElementById('realistic-blackout').style.display = 'none';
-                document.getElementById('btn-mode-vis').classList.add('active');
-                document.getElementById('btn-mode-real').classList.remove('active');
-                writeTerminalLog("[STATE INCIDENT] Perspective restored. Environmental frame canvas visible.");
-            }
-        }
-
-        function executeServerTelemetryHandshake() {
-            const user = document.getElementById('override-user').value.trim();
-            const pass = document.getElementById('override-pass').value.trim();
-            if (user === 'Yaris' && pass === 'sillypeach600') {
-                runtimeState.isAdminAuthenticated = true;
-                document.getElementById('auth-section-gate').style.display = 'none';
-                document.getElementById('admin-actions-gate').style.display = 'block';
-                writeTerminalLog("[AUTH CLEAR] Root clearance granted. Telemetry modules injected.");
-                alert("Operator cleared. Diagnostic arrays appended into your side workspace.");
-            } else { alert("Handshake credential signature rejected."); }
-        }
-
-        window.addEventListener('contextmenu', (e) => { e.preventDefault(); }); 
-        window.addEventListener('mousedown', (e) => { if (e.button === 2) { isOrbitActive = true; trackMouseCoords = { x: e.clientX, y: e.clientY }; } });
-        window.addEventListener('mousemove', (e) => {
-            if (!isOrbitActive || runtimeState.viewMode === 'realistic') return;
-            let deltaX = e.clientX - trackMouseCoords.x; let deltaY = e.clientY - trackMouseCoords.y;
-            viewportAngles.y += deltaX * 0.4; viewportAngles.x = Math.max(-5, Math.min(65, viewportAngles.x - deltaY * 0.4));
-            rigNode.style.transform = `rotateX(${viewportAngles.x}deg) rotateY(${viewportAngles.y}deg)`;
-            trackMouseCoords = { x: e.clientX, y: e.clientY };
-        });
-        window.addEventListener('mouseup', (e) => { if (e.button === 2) isOrbitActive = false; });
-
-        setInterval(() => {
-            runtimeState.timeElapsed++;
-            document.getElementById('time-display-clock').innerText = runtimeState.timeElapsed.toLocaleString();
-            calculateHardwareSpikeTelemetry();
-        }, 1000);
-
-        function calculateHardwareSpikeTelemetry() {
-            if (!runtimeState.isAdminAuthenticated) return;
-            document.getElementById('cpu-clock').innerText = `${(5.70 + (Math.random() * 0.02 - 0.01)).toFixed(2)} GHz`;
-            let simulatedLoad = 0.7 + (Math.random() * 0.3);
-            let simulatedTemp = 31.5 + (simulatedLoad * 0.12) + (Math.random() * 0.1);
-            document.getElementById('cpu-load').innerText = `${simulatedLoad.toFixed(1)} %`;
-            document.getElementById('cpu-temp').innerText = `${simulatedTemp.toFixed(1)} °C`;
-            document.getElementById('cpu-power').innerText = `${Math.floor(64 + (simulatedLoad * 1.0))} W`;
-            if (runtimeState.timeElapsed % 20 === 0) writeTerminalLog(`[SYS_LOG] Core monitoring checks executing at standard stable indices.`);
-        }
-
-        function toggleAdminPanelDeck(status) { document.getElementById('admin-telemetry-panel').className = status ? 'panel-visible' : ''; }
-        function injectTimeTokens(val) { runtimeState.timeElapsed += val; document.getElementById('time-display-clock').innerText = runtimeState.timeElapsed.toLocaleString(); writeTerminalLog(`[OVERRIDE SCRIPT EXEC] Forwarded progress matrices +${val} cycles.`); }
-        function writeTerminalLog(msgText) { const b = document.getElementById('console-logs-pane'); if (b) { b.innerHTML += `[${new Date().toLocaleTimeString()}] ${msgText}<br>`; b.scrollTop = b.scrollHeight; } }
-    </script>
 </body>
 </html>
