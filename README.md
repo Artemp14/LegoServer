@@ -1,13 +1,14 @@
-# 🥥 LEGO Coconut Simulator (Pure Meditative Edition)
+# 🟥 LEGO Brick Simulator | Panoramic Beach Edition
 
-A 1-to-1 recreation of the famous Steam phenomenon where you play completely as a stationary coconut. All score progression, clicking mechanisms, upgrades, and currency frameworks have been entirely stripped out in favor of the pure simulation design.
+An interactive, immersive, meditative simulation project entirely centered around an inanimate red LEGO brick resting silently in space. Completely strips out all legacy progressive gaming elements, transaction structures, click counts, and account database files.
 
-## 🧱 Project Features
-- **Arcade Camera Rig Controls:** Click and drag anywhere inside the browser window workspace layout to orbit your perspective around the high-resolution circular LEGO coconut model.
-- **Realistic Sensory Blackout Override:** Toggling this view parameters blacks out the viewport window. Because real coconuts lack sensory nervous receptors, you can naturally see and hear completely nothing.
-- **Concealed Server Diagnostics Matrix:** Inputting the administrative clear credentials (`Yaris` / password: `sillypeach600`) seamlessly reveals a rolling Ryzen 9 9950X hardware monitoring deck log at the click of a button.
+## 🏖️ Simulation Parameters
+- **RMB Environmental Panoramic Orbit:** Hold down your **Right Mouse Button (RMB)** and pull your pointer across the view screen canvas area to seamlessly pan and rotate your camera path perspective around the static LEGO brick.
+- **Realistic Perception Shutdown:** Activating this perception variable masks your display into a pitch-black layout sheet. Since standard plastic toy blocks lack central nervous systems, you can safely look at absolute quiet void states.
+- **Side Control Dock Menu:** Access perception switches, input secure clear commands, or review performance telemetry feeds from a single sliding tab container interface.
 
-## 🚀 Deployment Instructions (GitHub Pages)
-1. Initialize a clean public repository named `lego-coconut-simulator` on your account profile dashboard.
-2. Upload this exact folder structure with `index.html` and `README.md` directly to the repository.
-3. Open your project **Settings**, navigate to **Pages** inside the sidebar column, choose your branch source as `main` pointing to the `/root` folder, and save!
+## 🚀 Rapid Hosting Architecture (GitHub Pages)
+1. Initialize a new public repository inside your profile called `lego-brick-beach`.
+2. Commit this exact folder structure with `index.html` and `README.md` directly inside the root catalog directory.
+3. Tap **Settings** -> **Pages** in your repository header toolbar index grid.
+4. Alter your deploy option target source branch to `main` pointing to the base path root (`/`), and save changes!
