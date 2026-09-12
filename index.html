@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEGO Coconut Server & Clicker</title>
+    <title>LEGO Server Engine - Coconut Simulator</title>
     <style>
         :root {
-            --lego-red: #E60012;
-            --lego-yellow: #F4D03F;
-            --lego-blue: #0055A5;
-            --lego-dark: #1C2833;
-            --server-bg: #111827;
-            --panel-bg: #1F2937;
-            --accent-green: #10B981;
+            --brick-red: #E63946;
+            --brick-blue: #1D3557;
+            --brick-yellow: #FFB703;
+            --brick-dark: #111116;
+            --brick-grey: #2B2D42;
+            --text-light: #F1FAEE;
+            --neon-green: #39FF14;
         }
 
         * {
@@ -24,557 +24,708 @@
         }
 
         body {
-            background-color: var(--server-bg);
-            color: #F3F4F6;
-            min-height: 100vh;
+            background-color: var(--brick-dark);
+            color: var(--text-light);
+            overflow: hidden;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            overflow-x: hidden;
-        }
-
-        /* Top Navigation Header */
-        header {
-            width: 100%;
-            padding: 15px 30px;
-            background-color: var(--panel-bg);
-            border-bottom: 4px solid var(--lego-red);
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 50;
         }
 
-        .logo-title {
+        /* Authentication Portal Overlay */
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .auth-card {
+            background: var(--brick-grey);
+            padding: 30px;
+            border-radius: 12px;
+            border: 4px solid var(--brick-yellow);
+            box-shadow: 0 0 20px rgba(255, 183, 3, 0.3);
+            width: 350px;
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            margin-bottom: 20px;
+            color: var(--brick-yellow);
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--lego-yellow);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            letter-spacing: 2px;
         }
 
-        .server-btn {
-            background-color: var(--lego-blue);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 4px solid #003A70;
-            transition: all 0.1s ease;
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
         }
 
-        .server-btn:active {
-            transform: translateY(2px);
-            border-bottom-width: 2px;
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #aaa;
+            text-transform: uppercase;
         }
 
-        /* Main Game Layout */
-        main {
-            margin-top: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-            padding: 20px;
+        .input-group input {
             width: 100%;
-            max-width: 600px;
-        }
-
-        .score-container {
-            text-align: center;
-            background: var(--panel-bg);
-            padding: 15px 40px;
-            border-radius: 12px;
-            border: 3px solid #374151;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
-        }
-
-        #coconut-count {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--lego-yellow);
-        }
-
-        #cps-count {
-            color: #9CA3AF;
-            font-size: 1rem;
-            margin-top: 5px;
-        }
-
-        /* The Circular Coconut Clicker */
-        .clicker-zone {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 280px;
-            height: 280px;
-        }
-
-        .coconut-button {
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #8B5A2B, #5C3A21, #3D2515);
-            border: 12px solid #D2B48C;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6), inset 0 -10px 20px rgba(0,0,0,0.4);
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.05s ease;
+            padding: 10px;
+            border: 2px solid #444;
+            background: #15151a;
+            color: white;
+            border-radius: 6px;
             outline: none;
         }
 
-        .coconut-button:active {
-            transform: scale(0.95);
+        .input-group input:focus {
+            border-color: var(--brick-yellow);
         }
 
-        /* Three inner spots for realism */
-        .coconut-button::before {
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--brick-red);
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+            box-shadow: 0 4px 0 #b3242e;
+        }
+
+        .auth-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .guest-lnk {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #aaa;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Main App Interface */
+        #app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Left Side: Clicker & Shop Grid */
+        .game-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #181925, #111116);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            position: relative;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            background: rgba(0,0,0,0.4);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--brick-red);
+        }
+
+        .score-display h1 {
+            font-size: 28px;
+            color: var(--brick-yellow);
+        }
+
+        .score-display p {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .nav-btn {
+            padding: 10px 15px;
+            background: var(--brick-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 3px solid #0f1c30;
+        }
+
+        .nav-btn:active {
+            transform: translateY(2px);
+            border-bottom: none;
+        }
+
+        /* Interactive Canvas */
+        .clicker-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .coconut-element {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #8B5A2B, #5C3A21, #3A2213);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset -10px -10px 25px rgba(0,0,0,0.8), inset 10px 10px 25px rgba(255,255,255,0.1);
+            cursor: pointer;
+            position: relative;
+            animation: spin-slow 25s linear infinite;
+            transition: transform 0.05s ease;
+            border: 8px solid #4A2E1B;
+        }
+
+        .coconut-element::before {
             content: '';
             position: absolute;
-            width: 22px;
-            height: 22px;
-            background-color: #26170D;
-            border-radius: 50%;
-            top: 75px;
-            left: 85px;
-            box-shadow: 35px -15px 0 -2px #26170D, 45px 20px 0 1px #26170D;
+            top: 25%; left: 35%; width: 14px; height: 14px; background: #26160c; border-radius: 50%;
+            box-shadow: 25px 5px 0 #26160c, 12px 25px 0 #26160c;
         }
 
-        /* Floating numbers animation */
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .floating-text {
             position: absolute;
-            color: var(--lego-yellow);
+            color: var(--brick-yellow);
             font-weight: 900;
-            font-size: 1.8rem;
+            font-size: 26px;
             pointer-events: none;
             animation: floatUp 0.8s ease-out forwards;
-            text-shadow: 2px 2px 0 #000;
+            text-shadow: 0 2px 4px black;
             z-index: 100;
         }
 
         @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-120px) scale(0.8); opacity: 0; }
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
         }
 
-        /* Upgrade Shop Panel */
-        .shop-container {
-            width: 100%;
-            background: var(--panel-bg);
-            border-radius: 12px;
-            padding: 20px;
-            border: 3px solid #374151;
+        /* Upgrades & Skins Footer Workspace */
+        .upgrades-container {
+            height: 240px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
         }
 
-        .shop-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #374151;
-            padding-bottom: 8px;
-            color: #E5E7EB;
+        .shop-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            border: 2px solid #333;
+            overflow-y: auto;
+        }
+
+        .shop-section h3 {
+            font-size: 14px;
+            color: var(--brick-yellow);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 4px;
         }
 
         .shop-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #111827;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #374151;
-            transition: opacity 0.2s;
-        }
-
-        .shop-item.disabled {
-            opacity: 0.5;
-        }
-
-        .item-info h4 {
-            color: #F3F4F6;
-            margin-bottom: 2px;
-        }
-
-        .item-info p {
-            font-size: 0.85rem;
-            color: #9CA3AF;
-        }
-
-        .buy-btn {
-            background-color: var(--accent-green);
-            color: white;
-            border: none;
-            padding: 8px 16px;
+            background: #222530;
+            padding: 8px 12px;
             border-radius: 6px;
-            font-weight: 700;
+            margin-bottom: 8px;
             cursor: pointer;
+            border: 1px solid #3a3f54;
         }
 
-        .buy-btn:disabled {
-            background-color: #4B5563;
-            cursor: not-allowed;
-        }
+        .shop-item:hover { background: #2c3145; }
+        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Hidden Server Rack Menu / Modal Overlay */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(5px);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
+        .item-info h4 { font-size: 13px; color: #fff; }
+        .item-info p { font-size: 11px; color: #aaa; }
 
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .server-modal {
-            background-color: #111827;
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            border-radius: 12px;
-            border: 4px solid var(--lego-blue);
-            overflow-y: auto;
-            position: relative;
-            padding: 25px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: #EF4444;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-
-        /* Server Metrics Formatting */
-        .server-header {
-            margin-bottom: 20px;
-            border-bottom: 2px dashed #374151;
-            padding-bottom: 15px;
-        }
-
-        .cpu-badge {
-            background: #1F2937;
-            border-left: 5px solid #FF8C00;
-            padding: 10px 15px;
+        .item-cost {
+            background: var(--brick-red);
+            padding: 4px 8px;
             border-radius: 4px;
-            margin-top: 10px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
-        .grid-metrics {
+        .skin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
         }
 
-        .metric-card {
-            background: var(--panel-bg);
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #374151;
+        .skin-btn {
+            padding: 8px;
+            background: #222530;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
             text-align: center;
         }
 
-        .metric-label {
-            font-size: 0.85rem;
-            color: #9CA3AF;
-            text-transform: uppercase;
+        .skin-btn:hover { border-color: var(--brick-yellow); }
+
+        /* Right Side Modal Panel: LEGO Server Telemetry */
+        #server-modal {
+            position: fixed;
+            top: 0; right: -450px; width: 450px; height: 100%;
+            background: #111116;
+            border-left: 6px solid var(--brick-yellow);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            z-index: 500;
+            transition: right 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
         }
 
-        .metric-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent-green);
-            margin-top: 5px;
+        #server-modal.open { right: 0; }
+
+        .modal-close {
+            position: absolute;
+            top: 15px; left: -40px;
+            background: var(--brick-yellow);
+            color: black;
+            width: 35px; height: 35px;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; cursor: pointer;
+            border-radius: 6px 0 0 6px;
         }
 
-        /* Rolling Terminal Console */
-        .console-box {
-            background: #000;
-            font-family: 'Courier New', Courier, monospace;
+        .hardware-header {
+            border-bottom: 2px solid #222;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hardware-header h2 { color: var(--brick-yellow); font-size: 20px; }
+        .hardware-header p { font-size: 12px; color: #777; }
+
+        .metric-card {
+            background: #191a24;
             padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #374151;
-            height: 180px;
-            overflow-y: auto;
-            font-size: 0.85rem;
-            color: #38BDF8;
+            border-radius: 8px;
+            border: 1px solid #2d3043;
+            margin-bottom: 15px;
         }
 
-        .console-line {
-            margin-bottom: 4px;
-            white-space: pre-wrap;
+        .metric-row {
+            display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px;
+        }
+
+        .bar-container {
+            width: 100%; height: 12px; background: #222; border-radius: 4px; overflow: hidden; position: relative;
+        }
+
+        .bar-fill {
+            height: 100%; width: 5%; background: var(--brick-red); transition: width 0.5s ease, background 0.3s;
+        }
+
+        /* Core Array Grid layout */
+        .core-grid {
+            display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 10px;
+        }
+
+        .core-node {
+            height: 20px; background: #222; border-radius: 2px; font-size: 9px;
+            display: flex; justify-content: center; align-items: center; color: #666;
+            transition: background 0.3s;
+        }
+
+        .core-node.active { background: rgba(230, 57, 70, 0.3); color: #fff; border: 1px solid var(--brick-red); }
+
+        /* Admin Terminal Controls */
+        #admin-panel {
+            margin-top: auto;
+            border-top: 2px dashed #444;
+            padding-top: 15px;
+            display: none; /* Authenticated only */
+        }
+
+        #admin-panel h3 { font-size: 14px; color: var(--neon-green); margin-bottom: 10px; text-transform: uppercase; }
+
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .admin-btn {
+            padding: 8px; background: #222; border: 1px solid var(--neon-green); color: var(--neon-green);
+            font-size: 12px; border-radius: 4px; cursor: pointer; text-align: center;
+        }
+        .admin-btn:hover { background: var(--neon-green); color: black; }
+
+        .terminal-box {
+            background: #050508; border: 1px solid #222; border-radius: 6px;
+            height: 110px; overflow-y: auto; padding: 8px; font-family: monospace;
+            font-size: 11px; color: #aaa; margin-top: 10px; line-height: 1.4;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-title">
-            <span>🧱</span> LEGO Coconut Cluster
+    <!-- 🔐 Authentication Portal Layer -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2>System Login</h2>
+            <div class="input-group">
+                <label>User Identity</label>
+                <input type="text" id="username-field" placeholder="Enter identity module...">
+            </div>
+            <div class="input-group">
+                <label>Access Key</label>
+                <input type="password" id="password-field" placeholder="••••••••">
+            </div>
+            <button class="auth-btn" onclick="processLogin()">Initialize Session</button>
+            <div class="guest-lnk" onclick="bypassAuth()">Proceed as Cluster Guest</div>
         </div>
-        <button class="server-btn" id="open-server-btn">
-            ⚙️ Server Telemetry
-        </button>
-    </header>
+    </div>
 
-    <main>
-        <div class="score-container">
-            <div id="coconut-count">0</div>
-            <div id="cps-count">0.0 Coconuts / sec</div>
-        </div>
-
-        <div class="clicker-zone">
-            <button class="coconut-button" id="click-target"></button>
-        </div>
-
-        <div class="shop-container">
-            <h3 class="shop-title">Hardware Upgrades</h3>
-            
-            <div class="shop-item" id="shop-item-1">
-                <div class="item-info">
-                    <h4>Automated Nut-Cracker</h4>
-                    <p>+0.5 CPS | Cost: <span class="cost-val">15</span> coconuts</p>
+    <!-- 🕹️ Core Application Chassis -->
+    <div id="app-container">
+        <div class="game-panel">
+            <div class="header-bar">
+                <div class="score-display">
+                    <h1 id="coconut-count">0 Coconuts</h1>
+                    <p id="cps-display">Engine Generation: 0 CPS</p>
                 </div>
-                <button class="buy-btn" onclick="buyUpgrade(1, 15, 0.5)">Purchase</button>
+                <button class="nav-btn" onclick="toggleServerModal()">
+                    ⚙️ Server Telemetry
+                </button>
             </div>
 
-            <div class="shop-item" id="shop-item-2">
-                <div class="item-info">
-                    <h4>Steam Cloud Overclock</h4>
-                    <p>+4.0 CPS | Cost: <span class="cost-val">100</span> coconuts</p>
+            <!-- Interactivity Core Canvas -->
+            <div class="clicker-area">
+                <div class="coconut-element" id="coconut-btn" onclick="handleCoconutClick(event)"></div>
+            </div>
+
+            <!-- Progression Core Bays -->
+            <div class="upgrades-container">
+                <!-- Mechanical Buff Upgrades -->
+                <div class="shop-section">
+                    <h3>Subsystem Upgrades</h3>
+                    <div class="shop-item" onclick="buyUpgrade('clicker', 15, 1)">
+                        <div class="item-info">
+                            <h4>Auto Nut-Cracker</h4>
+                            <p>+1 CPS / Automated physical wedge</p>
+                        </div>
+                        <div class="item-cost" id="cost-clicker">15</div>
+                    </div>
+                    <div class="shop-item" onclick="buyUpgrade('drone', 100, 8)">
+                        <div class="item-info">
+                            <h4>Monkey Drone</h4>
+                            <p>+8 CPS / Automated cluster unit</p>
+                        </div>
+                        <div class="item-cost" id="cost-drone">100</div>
+                    </div>
+                    <div class="shop-item" onclick="buyUpgrade('quantum', 1000, 75)">
+                        <div class="item-info">
+                            <h4>Quantum Core Block</h4>
+                            <p>+75 CPS / Dynamic matrix engine</p>
+                        </div>
+                        <div class="item-cost" id="cost-quantum">1000</div>
+                    </div>
                 </div>
-                <button class="buy-btn" onclick="buyUpgrade(2, 100, 4.0)">Purchase</button>
+
+                <!-- Matrix Skin Textures -->
+                <div class="shop-section">
+                    <h3>Matrix Textures</h3>
+                    <div class="skin-grid">
+                        <button class="skin-btn" onclick="applySkin('classic')">Classic Brown</button>
+                        <button class="skin-btn" onclick="applySkin('space')">Space Blue</button>
+                        <button class="skin-btn" onclick="applySkin('octan')">Octan Green</button>
+                        <button class="skin-btn" onclick="applySkin('gold')">Solid Gold</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Hidden Modular Server Chassis View -->
-    <div class="modal-overlay" id="server-modal-overlay">
-        <div class="server-modal">
-            <button class="close-modal" id="close-server-btn">X CLOSE PANEL</button>
-            
-            <div class="server-header">
-                <h2>Host Server Matrix Diagnostics</h2>
-                <div class="cpu-badge">
-                    <strong>Processor Plant:</strong> AMD Ryzen 9 9950X (16 Cores / 32 Threads)
-                </div>
+    <!-- 📊 Slide-out Diagnostic Array -->
+    <div id="server-modal">
+        <div class="modal-close" onclick="toggleServerModal()">❌</div>
+        <div class="hardware-header">
+            <h2>LEGO Mainframe Node 1</h2>
+            <p id="cpu-model-label">Architecture: Guest Node Emulator</p>
+        </div>
+
+        <!-- Telemetry Clusters -->
+        <div class="metric-card">
+            <div class="metric-row">
+                <span>CPU Performance Load</span>
+                <span id="cpu-load-text">2%</span>
             </div>
-
-            <div class="grid-metrics">
-                <div class="metric-card">
-                    <div class="metric-label">CPU Clock Speed</div>
-                    <div class="metric-value" id="val-clock">4.30 GHz</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Processor Temperature</div>
-                    <div class="metric-value" id="val-temp" style="color: #6EE7B7;">34.2 °C</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Aggregate Usage Load</div>
-                    <div class="metric-value" id="val-load">4.1 %</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Chassis Cooling Fan Loop</div>
-                    <div class="metric-value" id="val-fan" style="color: #6EE7B7;">820 RPM</div>
-                </div>
+            <div class="bar-container">
+                <div class="bar-fill" id="cpu-load-bar" style="width: 2%;"></div>
             </div>
+            <div class="metric-row" style="margin-top: 8px; font-size: 11px; color: #777;">
+                <span>Clock Rate: <b id="cpu-clock-text">3.8 GHz</b></span>
+                <span>Power Draw: <b id="cpu-power-text">45W</b></span>
+            </div>
+        </div>
 
-            <h3>Active Steam Runtime Pipelines</h3>
-            <div class="console-box" id="terminal-console">
-                <div class="console-line">[SYSTEM] Initializing high-end platform matrix loop...</div>
-                <div class="console-line">[STEAM] Loaded AppID: 1104320 // Coconut Simulator Active</div>
+        <div class="metric-card">
+            <div class="metric-row">
+                <span>Thermal Dissipation Array</span>
+                <span id="cpu-temp-text">34°C</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" id="cpu-temp-bar" style="width: 34%; background: #4EA8DE;"></div>
+            </div>
+            <div class="metric-row" style="margin-top: 5px; font-size: 11px; color: #777;">
+                <span>Cooling System: Premium 360mm Fluid Loop</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-row"><span>Multi-Thread Matrix (32 Threads)</span></div>
+            <div class="core-grid" id="core-container">
+                <!-- 32 nodes programmatically filled -->
+            </div>
+        </div>
+
+        <!-- Hidden Authorized Workspace Console -->
+        <div id="admin-panel">
+            <h3>🛡️ Admin Overrides Activated</h3>
+            <div class="admin-grid">
+                <button class="admin-btn" onclick="adminMod(10000)">+10K Nuts</button>
+                <button class="admin-btn" onclick="adminMod(1000000)">+1M Nuts</button>
+                <button class="admin-btn" onclick="adminTriggerSpike()">Force Hardware Spike</button>
+                <button class="admin-btn" onclick="adminReset()">Purge State Database</button>
+            </div>
+            <div class="terminal-box" id="admin-terminal">
+                [SYSTEM LOG INIT]: Session established context secure...
             </div>
         </div>
     </div>
 
     <script>
-        // Core Game Engine Data Variables
-        let coconuts = 0;
-        let cps = 0;
-        let totalUpgradesPurchased = 0;
-
-        const upgradeData = {
-            1: { cost: 15, baseCost: 15, cpsToAdd: 0.5, count: 0 },
-            2: { cost: 100, baseCost: 100, cpsToAdd: 4.0, count: 0 }
+        let state = {
+            coconuts: 0,
+            cps: 0,
+            isAdmin: false,
+            upgrades: { clicker: 0, drone: 0, quantum: 0 }
         };
 
-        // DOM Handles
-        const coconutCountEl = document.getElementById('coconut-count');
-        const cpsCountEl = document.getElementById('cps-count');
-        const clickTarget = document.getElementById('click-target');
-        const openServerBtn = document.getElementById('open-server-btn');
-        const closeServerBtn = document.getElementById('close-server-btn');
-        const modalOverlay = document.getElementById('server-modal-overlay');
-        const terminalConsole = document.getElementById('terminal-console');
-
-        // Main Click Handler Event
-        clickTarget.addEventListener('click', (e) => {
-            coconuts += 1;
-            updateDisplay();
-            createFloatingText(e.clientX, e.clientY, "+1");
-            triggerRareSystemSpike();
-        });
-
-        // Upgrade purchasing architecture 
-        function buyUpgrade(id, cost, cpsToAdd) {
-            const upgrade = upgradeData[id];
-            if (coconuts >= upgrade.cost) {
-                coconuts -= upgrade.cost;
-                cps += upgrade.cpsToAdd;
-                upgrade.count++;
-                totalUpgradesPurchased++;
-                
-                // Scale upcoming item costs exponentially
-                upgrade.cost = Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.count));
-                
-                logConsole(`[UPGRADE] Provisioned network unit block #${id}. Total processing units active: ${upgrade.count}`);
-                updateDisplay();
-            }
+        // Core Layout Thread Population
+        const coreContainer = document.getElementById('core-container');
+        for(let i=0; i<32; i++) {
+            let node = document.createElement('div');
+            node.className = 'core-node';
+            node.id = `core-t-${i}`;
+            node.innerText = i;
+            coreContainer.appendChild(node);
         }
 
-        function updateDisplay() {
-            coconutCountEl.innerText = Math.floor(coconuts).toLocaleString();
-            cpsCountEl.innerText = `${cps.toFixed(1)} Coconuts / sec`;
+        function processLogin() {
+            const u = document.getElementById('username-field').value;
+            const p = document.getElementById('password-field').value;
 
-            // Dynamic Button Validation State Check Loop
-            for (let id in upgradeData) {
-                const item = upgradeData[id];
-                const row = document.getElementById(`shop-item-${id}`);
-                const btn = row.querySelector('.buy-btn');
-                row.querySelector('.cost-val').innerText = item.cost;
+            if (u === 'Yaris' && p === 'sillypeach600') {
+                state.isAdmin = true;
+                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('cpu-model-label').innerText = "Architecture: AMD Ryzen 9 9950X 16-Core Processor";
+                logAdmin("Security handshake passed. Dev console active.");
+                logAdmin("Liquid-cooled baseline optimized: 32 Threads verified.");
+            } else {
+                state.isAdmin = false;
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('cpu-model-label').innerText = "Architecture: Shared Sandbox Frame Core";
+            }
+            enterApp();
+        }
 
-                if (coconuts >= item.cost) {
-                    row.classList.remove('disabled');
-                    btn.disabled = false;
-                } else {
-                    row.classList.add('disabled');
-                    btn.disabled = true;
+        function bypassAuth() {
+            state.isAdmin = false;
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('cpu-model-label').innerText = "Architecture: Shared Sandbox Frame Core";
+            enterApp();
+        }
+
+        function enterApp() {
+            document.getElementById('auth-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('app-container').style.opacity = '1';
+            }, 500);
+        }
+
+        function toggleServerModal() {
+            document.getElementById('server-modal').classList.toggle('open');
+        }
+
+        function handleCoconutClick(e) {
+            state.coconuts += 1;
+            updateUI();
+
+            // Elastic Bounce Animation trigger
+            const btn = document.getElementById('coconut-btn');
+            btn.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
+            setTimeout(() => { btn.style.transform = ''; }, 60);
+
+            // Floating indicator node injection
+            const floater = document.createElement('div');
+            floater.className = 'floating-text';
+            floater.innerText = '+1';
+            floater.style.left = `${e.clientX - 15}px`;
+            floater.style.top = `${e.clientY - 25}px`;
+            document.body.appendChild(floater);
+            setTimeout(() => floater.remove(), 800);
+        }
+
+        function buyUpgrade(type, baseCost, cpsValue) {
+            let currentCount = state.upgrades[type];
+            let currentCost = Math.floor(baseCost * Math.pow(1.15, currentCount));
+
+            if (state.coconuts >= currentCost) {
+                state.coconuts -= currentCost;
+                state.upgrades[type]++;
+                state.cps += cpsValue;
+                
+                let nextCost = Math.floor(baseCost * Math.pow(1.15, state.upgrades[type]));
+                document.getElementById(`cost-${type}`).innerText = nextCost;
+                
+                if(state.isAdmin) {
+                    logAdmin(`Subsystem module upgraded: [${type}]. Total CPS allocation expanded.`);
                 }
+                updateUI();
             }
         }
 
-        // Click floating animations loop mechanics
-        function createFloatingText(x, y, txt) {
-            const spawn = document.createElement('div');
-            spawn.className = 'floating-text';
-            spawn.innerText = txt;
-            spawn.style.left = `${x - 20}px`;
-            spawn.style.top = `${y - 20}px`;
-            document.body.appendChild(spawn);
-            
-            setTimeout(() => { spawn.remove(); }, 800);
+        function applySkin(theme) {
+            const btn = document.getElementById('coconut-btn');
+            if (theme === 'classic') {
+                btn.style.background = 'radial-gradient(circle at 35% 35%, #8B5A2B, #5C3A21, #3A2213)';
+                btn.style.borderColor = '#4A2E1B';
+            } else if (theme === 'space') {
+                btn.style.background = 'radial-gradient(circle at 35% 35%, #00b4d8, #0077b6, #03045e)';
+                btn.style.borderColor = '#0096c7';
+            } else if (theme === 'octan') {
+                btn.style.background = 'radial-gradient(circle at 35% 35%, #38b000, #007200, #004b23)';
+                btn.style.borderColor = '#70e000';
+            } else if (theme === 'gold') {
+                btn.style.background = 'radial-gradient(circle at 35% 35%, #fee440, #f5b301, #9b7200)';
+                btn.style.borderColor = '#ffca3a';
+            }
+            if(state.isAdmin) logAdmin(`Skin configuration matrix rempapped to theme context: [${theme}].`);
         }
 
-        // Menu Overlay Management Actions
-        openServerBtn.addEventListener('click', () => modalOverlay.classList.add('active'));
-        closeServerBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
+        function updateUI() {
+            document.getElementById('coconut-count').innerText = `${Math.floor(state.coconuts)} Coconuts`;
+            document.getElementById('cps-display').innerText = `Engine Generation: ${state.cps} CPS`;
+        }
 
-        // Background Processing Intervals Loop (CPS Application Engine)
+        // Processing Multi-Thread Simulation Loops
         setInterval(() => {
-            if (cps > 0) {
-                coconuts += (cps / 10);
-                updateDisplay();
+            if (state.cps > 0) {
+                state.coconuts += (state.cps / 10);
+                updateUI();
             }
         }, 100);
 
-        // STABLE HARDWARE TELEMETRY LOGIC (Ryzen 9 9950X Loop)
-        let baseTemp = 34.5;
-        let baseLoad = 3.8;
-        let baseClock = 4.30;
-        let baseFan = 810;
-        
-        let spikeTimer = 0;
-
-        function triggerRareSystemSpike() {
-            // Tiny chance to tick up spike sequence during standard interactions
-            if (Math.random() > 0.92 && spikeTimer === 0) {
-                spikeTimer = 15; // Spike persists across 15 execution ticks
-                logConsole(`[STEAM] Assets Cache Thread pipeline batch dispatch running...`);
+        // Telemetry Engine Calculation (Ryzen 9 9950X Simulation Engine profile)
+        let spikeActive = false;
+        setInterval(() => {
+            let baseLoad = 1 + (state.cps * 0.15);
+            if (baseLoad > 45) baseLoad = 45; // Smooth distribution across extreme core array
+            
+            if (Math.random() < 0.04 && !spikeActive) { // Rare processing load spike parameter
+                spikeActive = true;
+                if(state.isAdmin) logAdmin("[ALERT]: Steam assets cache buffer refresh cycle ongoing.");
+                setTimeout(() => { spikeActive = false; }, 1800);
             }
+
+            let computedLoad = spikeActive ? Math.floor(65 + Math.random() * 20) : Math.floor(baseLoad + Math.random() * 4);
+            if(computedLoad > 100) computedLoad = 100;
+
+            // Fluid Cooler equation dynamics
+            let baseTemp = state.isAdmin ? 32 : 40;
+            let computedTemp = Math.floor(baseTemp + (computedLoad * 0.35));
+            let computedClock = state.isAdmin ? (spikeActive ? "5.7 GHz" : "4.2 GHz") : (spikeActive ? "4.1 GHz" : "2.9 GHz");
+            let computedPower = spikeActive ? (state.isAdmin ? "170W" : "95W") : (state.isAdmin ? "55W" : "35W");
+
+            // Element Rendering Engine pipelines
+            document.getElementById('cpu-load-text').innerText = `${computedLoad}%`;
+            document.getElementById('cpu-load-bar').style.width = `${computedLoad}%`;
+            document.getElementById('cpu-temp-text').innerText = `${computedTemp}°C`;
+            document.getElementById('cpu-temp-bar').style.width = `${computedTemp}%`;
+            document.getElementById('cpu-clock-text').innerText = computedClock;
+            document.getElementById('cpu-power-text').innerText = computedPower;
+
+            // Thermal bar color gradient mapping
+            document.getElementById('cpu-temp-bar').style.background = computedTemp > 65 ? 'var(--brick-red)' : (computedTemp > 45 ? 'var(--brick-yellow)' : '#4EA8DE');
+
+            // Visual Node updates
+            for(let i=0; i<32; i++) {
+                let node = document.getElementById(`core-t-${i}`);
+                let activationThreshold = (i / 32) * 100;
+                if (computedLoad > activationThreshold || (spikeActive && Math.random() > 0.3)) {
+                    node.classList.add('active');
+                } else {
+                    node.classList.remove('active');
+                }
+            }
+        }, 1000);
+
+        // Developer Command Terminal APIs
+        function logAdmin(msg) {
+            const term = document.getElementById('admin-terminal');
+            term.innerHTML += `<br>[${new Date().toLocaleTimeString()}]: ${msg}`;
+            term.scrollTop = term.scrollHeight;
         }
 
-        setInterval(() => {
-            let currentTemp, currentLoad, currentClock, currentFan;
+        function adminMod(amount) {
+            state.coconuts += amount;
+            updateUI();
+            logAdmin(`Manual payload injected successfully: added +${amount} coconuts.`);
+        }
 
-            if (spikeTimer > 0) {
-                // Active processing micro-spike telemetry configurations
-                currentLoad = baseLoad + (cps * 0.4) + (Math.random() * 25) + 30;
-                currentTemp = baseTemp + (cps * 0.2) + (Math.random() * 12) + 15;
-                currentClock = 5.45 + (Math.random() * 0.25);
-                currentFan = baseFan + 450 + (Math.random() * 100);
-                spikeTimer--;
-            } else {
-                // Highly stable resting operational state
-                let systemLoadFactor = (cps * 0.15);
-                currentLoad = baseLoad + systemLoadFactor + (Math.random() * 1.2);
-                currentTemp = baseTemp + (cps * 0.1) + (Math.random() * 0.8);
-                currentClock = baseClock + (Math.random() * 0.05);
-                currentFan = baseFan + (cps * 5) + (Math.random() * 10);
-            }
+        function adminTriggerSpike() {
+            spikeActive = true;
+            logAdmin("Manual load override requested. Multi-thread diagnostic pipeline saturated.");
+            setTimeout(() => { spikeActive = false; }, 3000);
+        }
 
-            // Bound allocations cleanly for rendering
-            document.getElementById('val-load').innerText = `${currentLoad.toFixed(1)} %`;
-            document.getElementById('val-temp').innerText = `${currentTemp.toFixed(1)} °C`;
-            document.getElementById('val-clock').innerText = `${currentClock.toFixed(2)} GHz`;
-            document.getElementById('val-fan').innerText = `${Math.floor(currentFan)} RPM`;
-
-            // Visual indicator warning coloring loops
-            const tempEl = document.getElementById('val-temp');
-            if (currentTemp > 55) { tempEl.style.color = '#F87171'; }
-            else if (currentTemp > 42) { tempEl.style.color = '#FBBF24'; }
-            else { tempEl.style.color = '#6EE7B7'; }
-
-            // Occasional system status prints
-            if (Math.random() > 0.97) {
-                const logs = [
-                    "[SYSTEM] AIO Liquid Cooling Pump report: Integrity Optimal.",
-                    "[STEAM] Synced active save state profile cluster data with Cloud.",
-                    "[SYSTEM] Ryzen Core Complex Die [CCD0] resting operational voltage regular."
-                ];
-                logConsole(logs[Math.floor(Math.random() * logs.length)]);
-            }
-
-        }, 400);
-
-        function logConsole(msg) {
-            const line = document.createElement('div');
-            line.className = 'console-line';
-            line.innerText = msg;
-            terminalConsole.appendChild(line);
-            terminalConsole.scrollTop = terminalConsole.scrollHeight;
+        function adminReset() {
+            state.coconuts = 0;
+            state.cps = 0;
+            state.upgrades = { clicker: 0, drone: 0, quantum: 0 };
+            document.getElementById('cost-clicker').innerText = 15;
+            document.getElementById('cost-drone').innerText = 100;
+            document.getElementById('cost-quantum').innerText = 1000;
+            updateUI();
+            logAdmin("Database cleared. Environment initialized to vanilla baseline state.");
         }
     </script>
 </body>
