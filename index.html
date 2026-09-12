@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEGO Server Engine - Coconut Simulator</title>
+    <title>LEGO Server - Coconut Simulator Engine</title>
     <style>
         :root {
-            --brick-red: #E63946;
-            --brick-blue: #1D3557;
-            --brick-yellow: #FFB703;
-            --brick-dark: #111116;
-            --brick-grey: #2B2D42;
-            --text-light: #F1FAEE;
-            --neon-green: #39FF14;
+            --lego-red: #E60012;
+            --lego-yellow: #FDF000;
+            --lego-blue: #0055A5;
+            --lego-dark: #1E2328;
+            --lego-gray: #2D3238;
+            --panel-bg: #14171A;
+            --text-main: #FFFFFF;
+            --text-muted: #8F98A0;
+            --accent: #00FF66;
         }
 
         * {
@@ -24,204 +26,324 @@
         }
 
         body {
-            background-color: var(--brick-dark);
-            color: var(--text-light);
-            overflow: hidden;
+            background-color: var(--lego-dark);
+            color: var(--text-main);
             height: 100vh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Authentication Portal Overlay */
+        /* --- AUTH SYSTEM --- */
         #auth-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 15, 0.95);
-            z-index: 1000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 12, 14, 0.95);
+            z-index: 9999;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.5s ease;
         }
 
         .auth-card {
-            background: var(--brick-grey);
+            background: var(--panel-bg);
+            border: 4px solid var(--lego-blue);
+            border-radius: 8px;
             padding: 30px;
-            border-radius: 12px;
-            border: 4px solid var(--brick-yellow);
-            box-shadow: 0 0 20px rgba(255, 183, 3, 0.3);
-            width: 350px;
+            width: 380px;
+            box-shadow: 0 0 20px rgba(0,85,165,0.4);
             text-align: center;
         }
 
         .auth-card h2 {
-            margin-bottom: 20px;
-            color: var(--brick-yellow);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 12px;
+            color: var(--lego-yellow);
             margin-bottom: 5px;
-            color: #aaa;
+            font-size: 24px;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .input-group input {
+        .auth-card p {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .auth-input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #444;
-            background: #15151a;
+            padding: 12px;
+            background: #0A0C0E;
+            border: 1px solid var(--lego-gray);
+            border-radius: 4px;
             color: white;
-            border-radius: 6px;
+            margin-bottom: 15px;
             outline: none;
         }
 
-        .input-group input:focus {
-            border-color: var(--brick-yellow);
+        .auth-input:focus {
+            border-color: var(--lego-blue);
         }
 
         .auth-btn {
             width: 100%;
             padding: 12px;
-            background: var(--brick-red);
-            border: none;
+            background: var(--lego-blue);
             color: white;
+            border: none;
+            border-radius: 4px;
             font-weight: bold;
-            border-radius: 6px;
             cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 10px;
-            box-shadow: 0 4px 0 #b3242e;
+            transition: background 0.2s;
         }
 
-        .auth-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
+        .auth-btn:hover {
+            background: #0066cc;
         }
 
-        .guest-lnk {
-            margin-top: 15px;
-            font-size: 13px;
-            color: #aaa;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        /* Main App Interface */
+        /* --- MAIN GRID --- */
         #app-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 320px 1fr 350px;
             width: 100vw;
             height: 100vh;
-            opacity: 0;
-            transition: opacity 0.5s ease;
+            background: #0A0C0E;
+            display: none; /* Shown after auth */
         }
 
-        /* Left Side: Clicker & Shop Grid */
-        .game-panel {
-            flex: 1;
-            background: linear-gradient(135deg, #181925, #111116);
+        /* Panels Shared */
+        .sidebar {
+            background: var(--panel-bg);
+            border-right: 2px solid var(--lego-gray);
             display: flex;
             flex-direction: column;
-            padding: 25px;
-            position: relative;
+            overflow-y: auto;
         }
 
-        .header-bar {
+        .right-bar {
+            background: var(--panel-bg);
+            border-left: 2px solid var(--lego-gray);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            background: var(--lego-gray);
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            border-bottom: 2px solid #14171A;
         }
 
-        .score-display {
-            background: rgba(0,0,0,0.4);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border-left: 5px solid var(--brick-red);
-        }
-
-        .score-display h1 {
-            font-size: 28px;
-            color: var(--brick-yellow);
-        }
-
-        .score-display p {
-            font-size: 14px;
-            color: #888;
-        }
-
-        .nav-btn {
-            padding: 10px 15px;
-            background: var(--brick-blue);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
+        /* --- LEFT SIDEBAR: UPGRADES & SHOP --- */
+        .tab-nav {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 3px solid #0f1c30;
+            background: #101214;
+            border-bottom: 1px solid var(--lego-gray);
         }
 
-        .nav-btn:active {
-            transform: translateY(2px);
-            border-bottom: none;
-        }
-
-        /* Interactive Canvas */
-        .clicker-area {
+        .tab-btn {
             flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tab-btn.active {
+            color: var(--lego-yellow);
+            background: var(--panel-bg);
+            border-bottom: 2px solid var(--lego-yellow);
+        }
+
+        .list-container {
+            padding: 10px;
+            flex: 1;
+        }
+
+        .upgrade-card, .shop-card {
+            background: #1A1D20;
+            border: 1px solid var(--lego-gray);
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s, border-color 0.2s;
+        }
+
+        .upgrade-card:hover, .shop-card:hover {
+            border-color: var(--text-muted);
+            transform: translateX(2px);
+        }
+
+        .card-info h4 {
+            font-size: 13px;
+            color: #FFF;
+        }
+
+        .card-info p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .card-cost {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--lego-yellow);
+            background: #101214;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* Timer banner for rotating shop */
+        #shop-timer-banner {
+            background: #251B12;
+            border-bottom: 1px solid #D2691E;
+            color: #FFA500;
+            padding: 6px;
+            font-size: 11px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* --- CORE VISUAL AREA --- */
+        #core-space {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px;
+            position: relative;
+            background: radial-gradient(circle, #1B2228 0%, #0A0C0E 100%);
+        }
+
+        #hud-top {
+            text-align: center;
+            z-index: 5;
+        }
+
+        #coconut-counter {
+            font-size: 42px;
+            font-weight: 800;
+            color: #FFF;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        #rate-indicators {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        #rate-indicators span {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* BOSS MODIFIER BANNER */
+        #boss-banner {
+            position: absolute;
+            top: 110px;
+            width: 80%;
+            background: rgba(230, 0, 18, 0.15);
+            border: 2px solid var(--lego-red);
+            border-radius: 6px;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(230,0,18,0.3);
+        }
+
+        #boss-title {
+            color: var(--lego-red);
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        #boss-target {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #1A1A1A;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #boss-progress {
+            width: 100%;
+            height: 100%;
+            background: var(--lego-red);
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+
+        /* COCONUT TARGET WITH CANVAS LAYERS */
+        #clicker-zone {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            width: 320px;
+            height: 320px;
         }
 
-        .coconut-element {
-            width: 220px;
-            height: 220px;
+        #coconut-element {
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #8B5A2B, #5C3A21, #3A2213);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset -10px -10px 25px rgba(0,0,0,0.8), inset 10px 10px 25px rgba(255,255,255,0.1);
+            background: radial-gradient(circle at 35% 35%, #8B5A2B, #4A2E1B);
+            border: 8px solid #301B0F;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6), inset -10px -10px 20px rgba(0,0,0,0.4);
             cursor: pointer;
             position: relative;
-            animation: spin-slow 25s linear infinite;
-            transition: transform 0.05s ease;
-            border: 8px solid #4A2E1B;
+            transition: transform 0.05s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .coconut-element::before {
+        /* Coconut details to look real but styled */
+        #coconut-element::before {
             content: '';
             position: absolute;
-            top: 25%; left: 35%; width: 14px; height: 14px; background: #26160c; border-radius: 50%;
-            box-shadow: 25px 5px 0 #26160c, 12px 25px 0 #26160c;
+            width: 25px;
+            height: 25px;
+            background: #25140A;
+            border-radius: 50%;
+            top: 55px; left: 60px;
+            box-shadow: 35px -10px 0 #25140A, 15px 30px 0 #25140A;
         }
 
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .floating-text {
+        /* FLOATING TEXT POPUP */
+        .float-text {
             position: absolute;
-            color: var(--brick-yellow);
+            color: var(--lego-yellow);
             font-weight: 900;
-            font-size: 26px;
+            font-size: 24px;
             pointer-events: none;
-            animation: floatUp 0.8s ease-out forwards;
-            text-shadow: 0 2px 4px black;
+            animation: floatUp 0.8s forwards ease-out;
             z-index: 100;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         @keyframes floatUp {
@@ -229,503 +351,936 @@
             100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
         }
 
-        /* Upgrades & Skins Footer Workspace */
-        .upgrades-container {
-            height: 240px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .shop-section {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 12px;
-            border: 2px solid #333;
-            overflow-y: auto;
-        }
-
-        .shop-section h3 {
-            font-size: 14px;
-            color: var(--brick-yellow);
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 4px;
-        }
-
-        .shop-item {
+        /* FOOTER ACTIONS */
+        #hud-bottom-actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #222530;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            border: 1px solid #3a3f54;
+            gap: 15px;
+            z-index: 5;
         }
 
-        .shop-item:hover { background: #2c3145; }
-        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .item-info h4 { font-size: 13px; color: #fff; }
-        .item-info p { font-size: 11px; color: #aaa; }
-
-        .item-cost {
-            background: var(--brick-red);
-            padding: 4px 8px;
+        .action-icon-btn {
+            background: var(--panel-bg);
+            border: 2px solid var(--lego-gray);
+            padding: 10px 18px;
             border-radius: 4px;
+            color: #FFF;
+            cursor: pointer;
             font-size: 12px;
             font-weight: bold;
-        }
-
-        .skin-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            display: flex;
+            align-items: center;
             gap: 8px;
         }
 
-        .skin-btn {
+        .action-icon-btn:hover {
+            border-color: var(--lego-yellow);
+            background: #1C2024;
+        }
+
+        /* --- RIGHT SIDEBAR: SERVER TELEMETRY --- */
+        .telemetry-block {
+            padding: 15px;
+            border-bottom: 1px solid var(--lego-gray);
+        }
+
+        .tel-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .tel-label { color: var(--text-muted); }
+        .tel-val { font-weight: bold; color: #FFF; }
+        .tel-val.good { color: var(--accent); }
+
+        /* Hardware Monitor visual row simulation */
+        .hardware-bar {
+            width: 100%;
+            height: 4px;
+            background: #101214;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .hardware-fill {
+            height: 100%;
+            background: var(--lego-blue);
+            width: 4%;
+            transition: width 0.4s ease;
+        }
+
+        /* SECURE TERMINAL AREA (ADMIN ONLY) */
+        #admin-panel-extension {
+            flex: 1;
+            display: none; /* Shown dynamically if Yaris logs in */
+            flex-direction: column;
+            border-top: 3px solid var(--lego-red);
+            background: #080A0C;
+        }
+
+        .terminal-feed {
+            flex: 1;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            color: #00FF33;
+            overflow-y: auto;
+            border-bottom: 1px solid var(--lego-gray);
+        }
+
+        .admin-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
             padding: 8px;
-            background: #222530;
-            border: 1px solid #444;
-            border-radius: 6px;
-            color: white;
+        }
+
+        .admin-cmd-btn {
+            background: #221010;
+            border: 1px solid var(--lego-red);
+            color: #FF8888;
+            padding: 6px;
             font-size: 11px;
             cursor: pointer;
-            text-align: center;
+            border-radius: 2px;
+            font-weight: bold;
         }
 
-        .skin-btn:hover { border-color: var(--brick-yellow); }
+        .admin-cmd-btn:hover {
+            background: var(--lego-red);
+            color: white;
+        }
 
-        /* Right Side Modal Panel: LEGO Server Telemetry */
-        #server-modal {
+        /* --- MODALS OVERLAYS --- */
+        .modal-overlay {
             position: fixed;
-            top: 0; right: -450px; width: 450px; height: 100%;
-            background: #111116;
-            border-left: 6px solid var(--brick-yellow);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.8);
             z-index: 500;
-            transition: right 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: var(--panel-bg);
+            border: 2px solid var(--lego-gray);
+            border-radius: 6px;
+            width: 450px;
+            max-height: 80vh;
             display: flex;
             flex-direction: column;
-            padding: 25px;
         }
 
-        #server-modal.open { right: 0; }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
 
         .modal-close {
-            position: absolute;
-            top: 15px; left: -40px;
-            background: var(--brick-yellow);
-            color: black;
-            width: 35px; height: 35px;
-            display: flex; justify-content: center; align-items: center;
-            font-weight: bold; cursor: pointer;
-            border-radius: 6px 0 0 6px;
+            background: #1A1D20;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 11px;
         }
 
-        .hardware-header {
-            border-bottom: 2px solid #222;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+        /* Crate grid items */
+        .crate-grid, .forge-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
         }
 
-        .hardware-header h2 { color: var(--brick-yellow); font-size: 20px; }
-        .hardware-header p { font-size: 12px; color: #777; }
-
-        .metric-card {
-            background: #191a24;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #2d3043;
-            margin-bottom: 15px;
+        .crate-card, .forge-card {
+            background: #1A1D20;
+            border: 1px solid var(--lego-gray);
+            border-radius: 4px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
         }
 
-        .metric-row {
-            display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px;
+        .crate-card:hover, .forge-card:hover {
+            border-color: var(--lego-yellow);
         }
 
-        .bar-container {
-            width: 100%; height: 12px; background: #222; border-radius: 4px; overflow: hidden; position: relative;
-        }
-
-        .bar-fill {
-            height: 100%; width: 5%; background: var(--brick-red); transition: width 0.5s ease, background 0.3s;
-        }
-
-        /* Core Array Grid layout */
-        .core-grid {
-            display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 10px;
-        }
-
-        .core-node {
-            height: 20px; background: #222; border-radius: 2px; font-size: 9px;
-            display: flex; justify-content: center; align-items: center; color: #666;
-            transition: background 0.3s;
-        }
-
-        .core-node.active { background: rgba(230, 57, 70, 0.3); color: #fff; border: 1px solid var(--brick-red); }
-
-        /* Admin Terminal Controls */
-        #admin-panel {
-            margin-top: auto;
-            border-top: 2px dashed #444;
-            padding-top: 15px;
-            display: none; /* Authenticated only */
-        }
-
-        #admin-panel h3 { font-size: 14px; color: var(--neon-green); margin-bottom: 10px; text-transform: uppercase; }
-
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .admin-btn {
-            padding: 8px; background: #222; border: 1px solid var(--neon-green); color: var(--neon-green);
-            font-size: 12px; border-radius: 4px; cursor: pointer; text-align: center;
-        }
-        .admin-btn:hover { background: var(--neon-green); color: black; }
-
-        .terminal-box {
-            background: #050508; border: 1px solid #222; border-radius: 6px;
-            height: 110px; overflow-y: auto; padding: 8px; font-family: monospace;
-            font-size: 11px; color: #aaa; margin-top: 10px; line-height: 1.4;
+        .crate-icon {
+            font-size: 28px;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 🔐 Authentication Portal Layer -->
+    <!-- SECTION 1: AUTHENTICATION INTERFACE (GATEWAY) -->
     <div id="auth-overlay">
         <div class="auth-card">
-            <h2>System Login</h2>
-            <div class="input-group">
-                <label>User Identity</label>
-                <input type="text" id="username-field" placeholder="Enter identity module...">
+            <h2>Steam Framework</h2>
+            <p>LEGO Server Connection Loop Pipeline</p>
+            <input type="text" id="username-field" class="auth-input" placeholder="Steam Identity / Node Link">
+            <input type="password" id="password-field" class="auth-input" placeholder="Access Matrix Token">
+            <button class="auth-btn" onclick="attemptAuthentication()">Mount Data Arrays</button>
+            <div style="margin-top:12px; font-size:10px; color:var(--text-muted)">
+                Hint: Standard user can enter anything. Admin logs track via context variables.
             </div>
-            <div class="input-group">
-                <label>Access Key</label>
-                <input type="password" id="password-field" placeholder="••••••••">
-            </div>
-            <button class="auth-btn" onclick="processLogin()">Initialize Session</button>
-            <div class="guest-lnk" onclick="bypassAuth()">Proceed as Cluster Guest</div>
         </div>
     </div>
 
-    <!-- 🕹️ Core Application Chassis -->
+    <!-- SECTION 2: MAIN INTEGRATED SERVER MATRIX APPLICATION -->
     <div id="app-container">
-        <div class="game-panel">
-            <div class="header-bar">
-                <div class="score-display">
-                    <h1 id="coconut-count">0 Coconuts</h1>
-                    <p id="cps-display">Engine Generation: 0 CPS</p>
-                </div>
-                <button class="nav-btn" onclick="toggleServerModal()">
-                    ⚙️ Server Telemetry
-                </button>
+        
+        <!-- SIDEBAR 1: PROGRESSION & ROTATING STORES -->
+        <div class="sidebar">
+            <div class="tab-nav">
+                <button class="tab-btn active" id="tab-upgrades-lnk" onclick="switchLeftTab('upgrades')">Core Modules</button>
+                <button class="tab-btn" id="tab-rot-lnk" onclick="switchLeftTab('rotating')">Randomized Shop</button>
             </div>
 
-            <!-- Interactivity Core Canvas -->
-            <div class="clicker-area">
-                <div class="coconut-element" id="coconut-btn" onclick="handleCoconutClick(event)"></div>
+            <!-- TAB A: CORE UPGRADES -->
+            <div id="left-upgrades-container" class="list-container">
+                <!-- Injected dynamically via script framework -->
             </div>
 
-            <!-- Progression Core Bays -->
-            <div class="upgrades-container">
-                <!-- Mechanical Buff Upgrades -->
-                <div class="shop-section">
-                    <h3>Subsystem Upgrades</h3>
-                    <div class="shop-item" onclick="buyUpgrade('clicker', 15, 1)">
-                        <div class="item-info">
-                            <h4>Auto Nut-Cracker</h4>
-                            <p>+1 CPS / Automated physical wedge</p>
+            <!-- TAB B: ROTATING RANDOMIZED COCONUT STORE -->
+            <div id="left-rotating-container" class="list-container" style="display: none;">
+                <div id="shop-timer-banner">Shop updates in: <span id="shop-timer-val">60s</span></div>
+                <div id="rotating-shop-list" style="margin-top: 8px;">
+                    <!-- Injected dynamically per minute iteration -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL: PERFORMANCE HUD AND ROTATING SIMULATOR OBJECT -->
+        <div id="core-space">
+            
+            <div id="hud-top">
+                <div id="coconut-counter">0</div>
+                <div id="rate-indicators">
+                    Click Power: <span id="stat-cpc">1</span> | Engine Rate: <span id="stat-cps">0</span> CPS
+                </div>
+            </div>
+
+            <!-- TASK FORCE/BOSS ENCOUNTER SIMULATION BANNER -->
+            <div id="boss-banner">
+                <div id="boss-title">💥 Thermal Runaway Critical Event 💥</div>
+                <div id="boss-target">Generate 500 Coconuts to vent pressure!</div>
+                <div class="progress-bar-container">
+                    <div id="boss-progress"></div>
+                </div>
+            </div>
+
+            <!-- CORE ACTIVE OBJECT GRID -->
+            <div id="clicker-zone">
+                <div id="coconut-element" onclick="triggerCoreClick(event)"></div>
+            </div>
+
+            <!-- HARDWARE FOOTER NAVIGATION SYSTEM LINK MATRIX -->
+            <div id="hud-bottom-actions">
+                <button class="action-icon-btn" onclick="openModal('crate-modal')">📦 Crate Matrix</button>
+                <button class="action-icon-btn" onclick="openModal('forge-modal')">⚒️ Reforge Bay</button>
+                <button class="action-icon-btn" onclick="saveGameSystem(true)">💾 Commit State</button>
+            </div>
+        </div>
+
+        <!-- SIDEBAR 2: AMD RYZEN 9 TELEMETRY RACK & SECURE TERMINAL -->
+        <div class="right-bar">
+            <div class="panel-header">
+                <span>Telemetry Node</span>
+                <span style="font-size:10px; color:var(--accent)">ONLINE</span>
+            </div>
+
+            <!-- PROCESSOR METADATA MATRIX -->
+            <div class="telemetry-block">
+                <div class="tel-row"><span class="tel-label">CPU Host:</span><span class="tel-val" style="color:var(--lego-yellow);">AMD Ryzen 9 9950X</span></div>
+                <div class="tel-row"><span class="tel-label">Topology:</span><span class="tel-val">16 Cores / 32 Threads</span></div>
+                <div class="tel-row"><span class="tel-label">Core Clock Rates:</span><span class="tel-val" id="tel-clock">4.30 GHz</span></div>
+                <div class="tel-row"><span class="tel-label">Power Envelope:</span><span class="tel-val" id="tel-power">65 Watts</span></div>
+            </div>
+
+            <div class="telemetry-block">
+                <div class="tel-row">
+                    <span class="tel-label">Thread Activity Load</span>
+                    <span class="tel-val" id="tel-load-pct">2.4%</span>
+                </div>
+                <div class="hardware-bar"><div class="hardware-fill" id="load-bar-fill"></div></div>
+            </div>
+
+            <div class="telemetry-block">
+                <div class="tel-row">
+                    <span class="tel-label">AIO Liquid Block Core Temp</span>
+                    <span class="tel-val good" id="tel-temp">34.2 °C</span>
+                </div>
+                <div class="hardware-bar"><div class="hardware-fill" id="temp-bar-fill" style="background:var(--accent);"></div></div>
+            </div>
+
+            <div class="telemetry-block">
+                <div class="tel-row"><span class="tel-label">Skins Profile:</span><span class="tel-val" id="active-skin-lbl" style="color:var(--accent)">Default Husk</span></div>
+                <div class="tel-row"><span class="tel-label">Forging Tier:</span><span class="tel-val" id="forge-tier-lbl">Level 0 (Standard)</span></div>
+                <div class="tel-row"><span class="tel-label">Encounters Defeated:</span><span class="tel-val" id="boss-win-lbl">0</span></div>
+            </div>
+
+            <!-- HIDDEN ACCOUNT PERMISSION WINDOW: DECRYPTS FOR USER 'Yaris' ONLY -->
+            <div id="admin-panel-extension">
+                <div class="panel-header" style="background:#3a0b0b; border-bottom:1px solid var(--lego-red)">
+                    <span style="color:#FF3333">🛡️ Yaris Admin Console</span>
+                </div>
+                <div class="terminal-feed" id="admin-console-feed">
+                    [SYSTEM INITIALIZATION COMPCOMPLETE]<br>
+                    [WAITING FOR COMMAND PARAMETERS...]
+                </div>
+                <div class="admin-controls-grid">
+                    <button class="admin-cmd-btn" onclick="executeAdminCheat(10000)">+10K Nuts</button>
+                    <button class="admin-cmd-btn" onclick="executeAdminCheat(1000000)">+1M Nuts</button>
+                    <button class="admin-cmd-btn" onclick="executeAdminCheat('multiplier')">x5 Click Power</button>
+                    <button class="admin-cmd-btn" onclick="executeAdminCheat('reset')">Flush Data</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL MODULE 1: BOX CRATES AND SKIN MATRIX -->
+    <div id="crate-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="panel-header">
+                <span>Drop Loot & Cosmetics Terminal</span>
+                <button class="modal-close" onclick="closeModal('crate-modal')">X</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">
+                    Unlock random rewards or alter the layout texture profile of the circular coconut simulator.
+                </p>
+                <h3>Open Loot Clusters</h3>
+                <div class="crate-grid">
+                    <div class="crate-card" onclick="openLootCrate('standard', 250)">
+                        <div class="crate-icon">📦</div>
+                        <div class="card-info">
+                            <h4>Standard Block Box</h4>
+                            <p>Cost: 250 Coconuts</p>
                         </div>
-                        <div class="item-cost" id="cost-clicker">15</div>
                     </div>
-                    <div class="shop-item" onclick="buyUpgrade('drone', 100, 8)">
-                        <div class="item-info">
-                            <h4>Monkey Drone</h4>
-                            <p>+8 CPS / Automated cluster unit</p>
+                    <div class="crate-card" onclick="openLootCrate('overclocked', 2000)">
+                        <div class="crate-icon">🔥</div>
+                        <div class="card-info">
+                            <h4>Overclocked Node</h4>
+                            <p>Cost: 2,000 Coconuts</p>
                         </div>
-                        <div class="item-cost" id="cost-drone">100</div>
-                    </div>
-                    <div class="shop-item" onclick="buyUpgrade('quantum', 1000, 75)">
-                        <div class="item-info">
-                            <h4>Quantum Core Block</h4>
-                            <p>+75 CPS / Dynamic matrix engine</p>
-                        </div>
-                        <div class="item-cost" id="cost-quantum">1000</div>
                     </div>
                 </div>
 
-                <!-- Matrix Skin Textures -->
-                <div class="shop-section">
-                    <h3>Matrix Textures</h3>
-                    <div class="skin-grid">
-                        <button class="skin-btn" onclick="applySkin('classic')">Classic Brown</button>
-                        <button class="skin-btn" onclick="applySkin('space')">Space Blue</button>
-                        <button class="skin-btn" onclick="applySkin('octan')">Octan Green</button>
-                        <button class="skin-btn" onclick="applySkin('gold')">Solid Gold</button>
+                <h3 style="margin-top:20px;">Unlocked Structural Profiles (Skins)</h3>
+                <div id="skins-inventory-list" style="margin-top:10px;">
+                    <!-- Populated dynamically based on flags -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MODULE 2: FORGING MATRIX BAY -->
+    <div id="forge-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="panel-header">
+                <span>The Heavy Forging Compound</span>
+                <button class="modal-close" onclick="closeModal('forge-modal')">X</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px;">
+                    Permanently fuse items to raise your global multiplicative output factor.
+                </p>
+                <div class="forge-card" style="width:100%; text-align:left; margin-bottom:15px;">
+                    <h4 id="forge-title-status">Core Forging Tier 1</h4>
+                    <p id="forge-desc-status">Increases total output metrics per click and per second globally by +25%.</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span class="card-cost" id="forge-cost-lbl">1,500 Coconuts</span>
+                        <button class="auth-btn" style="width:auto; padding:6px 15px;" onclick="attemptForgeUpgrade()">Forge Core</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 📊 Slide-out Diagnostic Array -->
-    <div id="server-modal">
-        <div class="modal-close" onclick="toggleServerModal()">❌</div>
-        <div class="hardware-header">
-            <h2>LEGO Mainframe Node 1</h2>
-            <p id="cpu-model-label">Architecture: Guest Node Emulator</p>
-        </div>
-
-        <!-- Telemetry Clusters -->
-        <div class="metric-card">
-            <div class="metric-row">
-                <span>CPU Performance Load</span>
-                <span id="cpu-load-text">2%</span>
-            </div>
-            <div class="bar-container">
-                <div class="bar-fill" id="cpu-load-bar" style="width: 2%;"></div>
-            </div>
-            <div class="metric-row" style="margin-top: 8px; font-size: 11px; color: #777;">
-                <span>Clock Rate: <b id="cpu-clock-text">3.8 GHz</b></span>
-                <span>Power Draw: <b id="cpu-power-text">45W</b></span>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-row">
-                <span>Thermal Dissipation Array</span>
-                <span id="cpu-temp-text">34°C</span>
-            </div>
-            <div class="bar-container">
-                <div class="bar-fill" id="cpu-temp-bar" style="width: 34%; background: #4EA8DE;"></div>
-            </div>
-            <div class="metric-row" style="margin-top: 5px; font-size: 11px; color: #777;">
-                <span>Cooling System: Premium 360mm Fluid Loop</span>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-row"><span>Multi-Thread Matrix (32 Threads)</span></div>
-            <div class="core-grid" id="core-container">
-                <!-- 32 nodes programmatically filled -->
-            </div>
-        </div>
-
-        <!-- Hidden Authorized Workspace Console -->
-        <div id="admin-panel">
-            <h3>🛡️ Admin Overrides Activated</h3>
-            <div class="admin-grid">
-                <button class="admin-btn" onclick="adminMod(10000)">+10K Nuts</button>
-                <button class="admin-btn" onclick="adminMod(1000000)">+1M Nuts</button>
-                <button class="admin-btn" onclick="adminTriggerSpike()">Force Hardware Spike</button>
-                <button class="admin-btn" onclick="adminReset()">Purge State Database</button>
-            </div>
-            <div class="terminal-box" id="admin-terminal">
-                [SYSTEM LOG INIT]: Session established context secure...
-            </div>
-        </div>
-    </div>
-
+    <!-- MAIN ENGINE DATA SCRIPT MATRIX -->
     <script>
-        let state = {
+        // State tracking structures
+        let gameState = {
             coconuts: 0,
-            cps: 0,
-            isAdmin: false,
-            upgrades: { clicker: 0, drone: 0, quantum: 0 }
+            totalCoconutsEarned: 0,
+            clickPowerMultiplier: 1,
+            forgeTier: 0,
+            bossWins: 0,
+            activeSkin: 'default',
+            unlockedSkins: ['default'],
+            upgrades: {
+                cracker: { count: 0, baseCost: 15, cps: 0.2, cpc: 0, label: "Plastic Nut-Cracker" },
+                monkey: { count: 0, baseCost: 100, cps: 1, cpc: 1, label: "Droid Harvester" },
+                steam_link: { count: 0, baseCost: 1100, cps: 8, cpc: 5, label: "Steam Cloud Pipeline" },
+                overclock_loop: { count: 0, baseCost: 12000, cps: 45, cpc: 25, label: "AIO Radiator Array" },
+                quantum_core: { count: 0, baseCost: 85000, cps: 260, cpc: 150, label: "LEGO Quantum Array" }
+            }
         };
 
-        // Core Layout Thread Population
-        const coreContainer = document.getElementById('core-container');
-        for(let i=0; i<32; i++) {
-            let node = document.createElement('div');
-            node.className = 'core-node';
-            node.id = `core-t-${i}`;
-            node.innerText = i;
-            coreContainer.appendChild(node);
-        }
+        // Randomized shop lists that rotate every 60 intervals
+        let randomizedShopItems = [];
+        let shopTimerCountdown = 60;
+        let isAdminActive = false;
 
-        function processLogin() {
-            const u = document.getElementById('username-field').value;
-            const p = document.getElementById('password-field').value;
+        // Boss / Event Parameters
+        let isBossActive = false;
+        let bossTimeLimit = 0;
+        let bossTimeRemaining = 0;
+        let bossTargetGoal = 0;
+        let bossStartBalance = 0;
+        let bossCheckInterval = null;
 
-            if (u === 'Yaris' && p === 'sillypeach600') {
-                state.isAdmin = true;
-                document.getElementById('admin-panel').style.display = 'block';
-                document.getElementById('cpu-model-label').innerText = "Architecture: AMD Ryzen 9 9950X 16-Core Processor";
-                logAdmin("Security handshake passed. Dev console active.");
-                logAdmin("Liquid-cooled baseline optimized: 32 Threads verified.");
+        // Custom skin templates
+        const skinPresets = {
+            default: { label: "Default Husk", bg: "radial-gradient(circle at 35% 35%, #8B5A2B, #4A2E1B)", border: "#301B0F" },
+            space_blue: { label: "Classic Space Blue", bg: "radial-gradient(circle at 35% 35%, #0055A5, #002255)", border: "#FDF000" },
+            octan_green: { label: "Octan Energy Synergy", bg: "radial-gradient(circle at 35% 35%, #00AA44, #005511)", border: "#E60012" },
+            cyber_glow: { label: "Neon Cyberpunk Glow", bg: "radial-gradient(circle at 35% 35%, #FF007F, #3A003A)", border: "#00FFFF" },
+            gold_brick: { label: "Solid Golden Brick", bg: "radial-gradient(circle at 35% 35%, #FFE000, #9A7A00)", border: "#FFFFFF" }
+        };
+
+        // Initialize engine framework on boot
+        window.onload = function() {
+            loadGameSystem();
+            setupContinuousLoops();
+            generateRandomizedShop();
+            renderCoreUpgrades();
+            updateDisplayHUD();
+        };
+
+        // --- AUTHENTICATION PARSER ---
+        function attemptAuthentication() {
+            const user = document.getElementById('username-field').value.trim();
+            const pass = document.getElementById('password-field').value.trim();
+
+            if (user === 'Yaris' && pass === 'sillypeach600') {
+                isAdminActive = true;
+                document.getElementById('admin-panel-extension').style.display = 'flex';
+                logAdminTerminal("Access Granted. Security matrices cleared for user Yaris.");
             } else {
-                state.isAdmin = false;
-                document.getElementById('admin-panel').style.display = 'none';
-                document.getElementById('cpu-model-label').innerText = "Architecture: Shared Sandbox Frame Core";
+                isAdminActive = false;
+                document.getElementById('admin-panel-extension').style.display = 'none';
             }
-            enterApp();
+
+            // Reveal simulation canvas regardless of role tier
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('app-container').style.display = 'grid';
         }
 
-        function bypassAuth() {
-            state.isAdmin = false;
-            document.getElementById('admin-panel').style.display = 'none';
-            document.getElementById('cpu-model-label').innerText = "Architecture: Shared Sandbox Frame Core";
-            enterApp();
+        // --- GAME SAVING AND PERSISTENCE (SAFE FILES) ---
+        function saveGameSystem(manual = false) {
+            localStorage.setItem('lego_coconut_savefile_v3', JSON.stringify(gameState));
+            if (manual) {
+                if (isAdminActive) logAdminTerminal("Manual commit completed successfully to LocalStorage map.");
+                alert("Game data state saved securely!");
+            }
         }
 
-        function enterApp() {
-            document.getElementById('auth-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('auth-overlay').style.display = 'none';
-                document.getElementById('app-container').style.opacity = '1';
-            }, 500);
-        }
-
-        function toggleServerModal() {
-            document.getElementById('server-modal').classList.toggle('open');
-        }
-
-        function handleCoconutClick(e) {
-            state.coconuts += 1;
-            updateUI();
-
-            // Elastic Bounce Animation trigger
-            const btn = document.getElementById('coconut-btn');
-            btn.style.transform = 'scale(0.9) rotate(' + (Math.random() * 10 - 5) + 'deg)';
-            setTimeout(() => { btn.style.transform = ''; }, 60);
-
-            // Floating indicator node injection
-            const floater = document.createElement('div');
-            floater.className = 'floating-text';
-            floater.innerText = '+1';
-            floater.style.left = `${e.clientX - 15}px`;
-            floater.style.top = `${e.clientY - 25}px`;
-            document.body.appendChild(floater);
-            setTimeout(() => floater.remove(), 800);
-        }
-
-        function buyUpgrade(type, baseCost, cpsValue) {
-            let currentCount = state.upgrades[type];
-            let currentCost = Math.floor(baseCost * Math.pow(1.15, currentCount));
-
-            if (state.coconuts >= currentCost) {
-                state.coconuts -= currentCost;
-                state.upgrades[type]++;
-                state.cps += cpsValue;
-                
-                let nextCost = Math.floor(baseCost * Math.pow(1.15, state.upgrades[type]));
-                document.getElementById(`cost-${type}`).innerText = nextCost;
-                
-                if(state.isAdmin) {
-                    logAdmin(`Subsystem module upgraded: [${type}]. Total CPS allocation expanded.`);
+        function loadGameSystem() {
+            const raw = localStorage.getItem('lego_coconut_savefile_v3');
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    // Deep copy attributes carefully to prevent breaks from mismatched versions
+                    if (parsed.coconuts !== undefined) gameState.coconuts = parsed.coconuts;
+                    if (parsed.totalCoconutsEarned !== undefined) gameState.totalCoconutsEarned = parsed.totalCoconutsEarned;
+                    if (parsed.clickPowerMultiplier !== undefined) gameState.clickPowerMultiplier = parsed.clickPowerMultiplier;
+                    if (parsed.forgeTier !== undefined) gameState.forgeTier = parsed.forgeTier;
+                    if (parsed.bossWins !== undefined) gameState.bossWins = parsed.bossWins;
+                    if (parsed.activeSkin !== undefined) gameState.activeSkin = parsed.activeSkin;
+                    if (parsed.unlockedSkins !== undefined) gameState.unlockedSkins = parsed.unlockedSkins;
+                    
+                    if (parsed.upgrades) {
+                        for (let key in parsed.upgrades) {
+                            if (gameState.upgrades[key]) {
+                                gameState.upgrades[key].count = parsed.upgrades[key].count;
+                            }
+                        }
+                    }
+                } catch(e) {
+                    console.error("Save file parsing corruption detected. Initializing standard defaults.", e);
                 }
-                updateUI();
             }
         }
 
-        function applySkin(theme) {
-            const btn = document.getElementById('coconut-btn');
-            if (theme === 'classic') {
-                btn.style.background = 'radial-gradient(circle at 35% 35%, #8B5A2B, #5C3A21, #3A2213)';
-                btn.style.borderColor = '#4A2E1B';
-            } else if (theme === 'space') {
-                btn.style.background = 'radial-gradient(circle at 35% 35%, #00b4d8, #0077b6, #03045e)';
-                btn.style.borderColor = '#0096c7';
-            } else if (theme === 'octan') {
-                btn.style.background = 'radial-gradient(circle at 35% 35%, #38b000, #007200, #004b23)';
-                btn.style.borderColor = '#70e000';
-            } else if (theme === 'gold') {
-                btn.style.background = 'radial-gradient(circle at 35% 35%, #fee440, #f5b301, #9b7200)';
-                btn.style.borderColor = '#ffca3a';
+        // --- MATH METRICS PARSERS ---
+        function getClickPower() {
+            let base = 1;
+            for (let key in gameState.upgrades) {
+                base += gameState.upgrades[key].count * gameState.upgrades[key].cpc;
             }
-            if(state.isAdmin) logAdmin(`Skin configuration matrix rempapped to theme context: [${theme}].`);
+            let forgeBonus = 1 + (gameState.forgeTier * 0.25);
+            return Math.floor(base * gameState.clickPowerMultiplier * forgeBonus);
         }
 
-        function updateUI() {
-            document.getElementById('coconut-count').innerText = `${Math.floor(state.coconuts)} Coconuts`;
-            document.getElementById('cps-display').innerText = `Engine Generation: ${state.cps} CPS`;
+        function getCoconutsPerSecond() {
+            let base = 0;
+            for (let key in gameState.upgrades) {
+                base += gameState.upgrades[key].count * gameState.upgrades[key].cps;
+            }
+            let forgeBonus = 1 + (gameState.forgeTier * 0.25);
+            return base * forgeBonus;
         }
 
-        // Processing Multi-Thread Simulation Loops
-        setInterval(() => {
-            if (state.cps > 0) {
-                state.coconuts += (state.cps / 10);
-                updateUI();
-            }
-        }, 100);
+        function getUpgradeCost(key, upgradeObj) {
+            return Math.floor(upgradeObj.baseCost * Math.pow(1.15, upgradeObj.count));
+        }
 
-        // Telemetry Engine Calculation (Ryzen 9 9950X Simulation Engine profile)
-        let spikeActive = false;
-        setInterval(() => {
-            let baseLoad = 1 + (state.cps * 0.15);
-            if (baseLoad > 45) baseLoad = 45; // Smooth distribution across extreme core array
+        // --- MAIN RENDERING LOOPS ---
+        function updateDisplayHUD() {
+            document.getElementById('coconut-counter').innerText = Math.floor(gameState.coconuts).toLocaleString();
+            document.getElementById('stat-cpc').innerText = getClickPower().toLocaleString();
+            document.getElementById('stat-cps').innerText = getCoconutsPerSecond().toFixed(1);
             
-            if (Math.random() < 0.04 && !spikeActive) { // Rare processing load spike parameter
-                spikeActive = true;
-                if(state.isAdmin) logAdmin("[ALERT]: Steam assets cache buffer refresh cycle ongoing.");
-                setTimeout(() => { spikeActive = false; }, 1800);
+            // Sync side metadata stats block
+            document.getElementById('forge-tier-lbl').innerText = `Level ${gameState.forgeTier} (${(gameState.forgeTier * 25)}% Bonus)`;
+            document.getElementById('boss-win-lbl').innerText = gameState.bossWins;
+            document.getElementById('active-skin-lbl').innerText = skinPresets[gameState.activeSkin]?.label || "Unknown";
+
+            // Update skin design rendering configuration dynamically
+            const targetVisual = skinPresets[gameState.activeSkin] || skinPresets['default'];
+            const cocoBtn = document.getElementById('coconut-element');
+            if (cocoBtn) {
+                cocoBtn.style.background = targetVisual.bg;
+                cocoBtn.style.borderColor = targetVisual.border;
             }
+        }
 
-            let computedLoad = spikeActive ? Math.floor(65 + Math.random() * 20) : Math.floor(baseLoad + Math.random() * 4);
-            if(computedLoad > 100) computedLoad = 100;
+        function renderCoreUpgrades() {
+            const container = document.getElementById('left-upgrades-container');
+            container.innerHTML = '';
 
-            // Fluid Cooler equation dynamics
-            let baseTemp = state.isAdmin ? 32 : 40;
-            let computedTemp = Math.floor(baseTemp + (computedLoad * 0.35));
-            let computedClock = state.isAdmin ? (spikeActive ? "5.7 GHz" : "4.2 GHz") : (spikeActive ? "4.1 GHz" : "2.9 GHz");
-            let computedPower = spikeActive ? (state.isAdmin ? "170W" : "95W") : (state.isAdmin ? "55W" : "35W");
+            for (let key in gameState.upgrades) {
+                const up = gameState.upgrades[key];
+                const cost = getUpgradeCost(key, up);
 
-            // Element Rendering Engine pipelines
-            document.getElementById('cpu-load-text').innerText = `${computedLoad}%`;
-            document.getElementById('cpu-load-bar').style.width = `${computedLoad}%`;
-            document.getElementById('cpu-temp-text').innerText = `${computedTemp}°C`;
-            document.getElementById('cpu-temp-bar').style.width = `${computedTemp}%`;
-            document.getElementById('cpu-clock-text').innerText = computedClock;
-            document.getElementById('cpu-power-text').innerText = computedPower;
+                const card = document.createElement('div');
+                card.className = 'upgrade-card';
+                card.onclick = () => buyHardwareUpgrade(key);
 
-            // Thermal bar color gradient mapping
-            document.getElementById('cpu-temp-bar').style.background = computedTemp > 65 ? 'var(--brick-red)' : (computedTemp > 45 ? 'var(--brick-yellow)' : '#4EA8DE');
+                card.innerHTML = `
+                    <div class="card-info">
+                        <h4>${up.label} (${up.count})</h4>
+                        <p>+${up.cps} CPS | +${up.cpc} Click Power</p>
+                    </div>
+                    <div class="card-cost">${cost.toLocaleString()}</div>
+                `;
+                container.appendChild(card);
+            }
+        }
 
-            // Visual Node updates
-            for(let i=0; i<32; i++) {
-                let node = document.getElementById(`core-t-${i}`);
-                let activationThreshold = (i / 32) * 100;
-                if (computedLoad > activationThreshold || (spikeActive && Math.random() > 0.3)) {
-                    node.classList.add('active');
-                } else {
-                    node.classList.remove('active');
+        // --- CORE INPUT EVENT MATRIX ---
+        let currentRotationAngle = 0;
+        function setupContinuousLoops() {
+            // Spinning engine tick
+            setInterval(() => {
+                currentRotationAngle += 0.4;
+                const element = document.getElementById('coconut-element');
+                if (element) {
+                    element.style.transform = `rotate(${currentRotationAngle}deg)`;
+                }
+            }, 30);
+
+            // Automated processing pipeline (CPS generation frame loop)
+            setInterval(() => {
+                const cps = getCoconutsPerSecond();
+                if (cps > 0) {
+                    addCoconuts(cps / 10);
+                }
+                
+                // Continuous telemetry visualization changes to match high-end hardware
+                simulateHardwareTelemetry(cps);
+            }, 100);
+
+            // Save telemetry auto-commit interval block
+            setInterval(() => {
+                saveGameSystem();
+            }, 30000);
+
+            // Rotating randomized store runtime clock
+            setInterval(() => {
+                shopTimerCountdown--;
+                if (shopTimerCountdown <= 0) {
+                    generateRandomizedShop();
+                    shopTimerCountdown = 60;
+                }
+                const banner = document.getElementById('shop-timer-val');
+                if (banner) banner.innerText = `${shopTimerCountdown}s`;
+            }, 1000);
+
+            // Event random dynamic trigger checklist
+            setInterval(() => {
+                if (!isBossActive && Math.random() < 0.05) {
+                    triggerRandomBossEvent();
+                }
+            }, 10000);
+        }
+
+        function triggerCoreClick(event) {
+            const amt = getClickPower();
+            addCoconuts(amt);
+
+            // Elastic structural bounce simulation transformation physics injection
+            const element = document.getElementById('coconut-element');
+            element.style.transform = `rotate(${currentRotationAngle}deg) scale(0.92)`;
+            setTimeout(() => {
+                element.style.transform = `rotate(${currentRotationAngle}deg) scale(1)`;
+            }, 50);
+
+            // Trigger floating metric flag indicator trace
+            createFloatingText(event.clientX, event.clientY, `+${amt}`);
+        }
+
+        function addCoconuts(amount) {
+            gameState.coconuts += amount;
+            gameState.totalCoconutsEarned += amount;
+            updateDisplayHUD();
+
+            // Track boss victory framework metrics
+            if (isBossActive) {
+                const progressAmt = gameState.coconuts - bossStartBalance;
+                const pct = Math.min((progressAmt / bossTargetGoal) * 100, 100);
+                document.getElementById('boss-progress').style.width = `${100 - pct}%`;
+
+                if (progressAmt >= bossTargetGoal) {
+                    resolveBossEncounter(true);
                 }
             }
-        }, 1000);
-
-        // Developer Command Terminal APIs
-        function logAdmin(msg) {
-            const term = document.getElementById('admin-terminal');
-            term.innerHTML += `<br>[${new Date().toLocaleTimeString()}]: ${msg}`;
-            term.scrollTop = term.scrollHeight;
         }
 
-        function adminMod(amount) {
-            state.coconuts += amount;
-            updateUI();
-            logAdmin(`Manual payload injected successfully: added +${amount} coconuts.`);
+        function createFloatingText(x, y, text) {
+            const fl = document.createElement('div');
+            fl.className = 'float-text';
+            fl.innerText = text;
+            fl.style.left = `${x - 15}px`;
+            fl.style.top = `${y - 25}px`;
+            document.body.appendChild(fl);
+
+            setTimeout(() => { fl.remove(); }, 800);
         }
 
-        function adminTriggerSpike() {
-            spikeActive = true;
-            logAdmin("Manual load override requested. Multi-thread diagnostic pipeline saturated.");
-            setTimeout(() => { spikeActive = false; }, 3000);
+        // --- REFORGE MATRIX PROCESSING ---
+        function attemptForgeUpgrade() {
+            const cost = Math.floor(1500 * Math.pow(2.5, gameState.forgeTier));
+            if (gameState.coconuts >= cost) {
+                gameState.coconuts -= cost;
+                gameState.forgeTier++;
+                if (isAdminActive) logAdminTerminal(`Fused core structural layers. Raised to Tier: ${gameState.forgeTier}`);
+                updateDisplayHUD();
+                renderForgeInterface();
+                renderCoreUpgrades();
+            } else {
+                alert("Insufficient network balances to fuse core blocks.");
+            }
         }
 
-        function adminReset() {
-            state.coconuts = 0;
-            state.cps = 0;
-            state.upgrades = { clicker: 0, drone: 0, quantum: 0 };
-            document.getElementById('cost-clicker').innerText = 15;
-            document.getElementById('cost-drone').innerText = 100;
-            document.getElementById('cost-quantum').innerText = 1000;
-            updateUI();
-            logAdmin("Database cleared. Environment initialized to vanilla baseline state.");
+        function renderForgeInterface() {
+            const cost = Math.floor(1500 * Math.pow(2.5, gameState.forgeTier));
+            document.getElementById('forge-title-status').innerText = `Core Forging Matrix Tier ${gameState.forgeTier + 1}`;
+            document.getElementById('forge-desc-status').innerText = `Fuses network infrastructure blocks to step up your global output metrics by an additional +25% globally. Current tier: Level ${gameState.forgeTier}`;
+            document.getElementById('forge-cost-lbl').innerText = `${cost.toLocaleString()} Coconuts`;
+        }
+
+        // --- PURCHASING UPGRADES ---
+        function buyHardwareUpgrade(key) {
+            const up = gameState.upgrades[key];
+            const cost = getUpgradeCost(key, up);
+
+            if (gameState.coconuts >= cost) {
+                gameState.coconuts -= cost;
+                up.count++;
+                if (isAdminActive) logAdminTerminal(`Successfully provisioned hardware module: ${up.label}`);
+                renderCoreUpgrades();
+                updateDisplayHUD();
+            }
+        }
+
+        // --- RANDOMIZED ROTATING SHOP LOGIC ---
+        function generateRandomizedShop() {
+            const modifiers = [
+                { id: "mod_click_1", label: "Hardened Shells", cost: 150, desc: "Temporary click optimization. Adds +3 Click Power", effect: () => { gameState.upgrades.cracker.count += 5; } },
+                { id: "mod_click_2", label: "AIO Fluid Flush", cost: 800, desc: "Flushes the system. Instantly claims 400 Coconuts", effect: () => { gameState.coconuts += 400; } },
+                { id: "mod_click_3", label: "Steam Valve Bypass", cost: 3500, desc: "Overclocks framework pipeline. Allocates a bonus Droid", effect: () => { gameState.upgrades.monkey.count += 3; } },
+                { id: "mod_click_4", label: "Quantum Silicon Node", cost: 15000, desc: "Extreme layout upgrade loop. Allocates +1 Steam Link", effect: () => { gameState.upgrades.steam_link.count += 1; } }
+            ];
+
+            // Select 2 random options from array pool to present inside rotating view container
+            let shuffled = modifiers.sort(() => 0.5 - Math.random());
+            randomizedShopItems = shuffled.slice(0, 2);
+
+            const container = document.getElementById('rotating-shop-list');
+            container.innerHTML = '';
+
+            randomizedShopItems.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'shop-card';
+                card.onclick = () => purchaseRotatingItem(index);
+                card.innerHTML = `
+                    <div class="card-info">
+                        <h4>${item.label}</h4>
+                        <p>${item.desc}</p>
+                    </div>
+                    <div class="card-cost">${item.cost}</div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (isAdminActive) logAdminTerminal("Rotated and cleared alternative randomized shop listings matrix framework.");
+        }
+
+        function purchaseRotatingItem(index) {
+            const item = randomizedShopItems[index];
+            if (!item) return;
+
+            if (gameState.coconuts >= item.cost) {
+                gameState.coconuts -= item.cost;
+                item.effect();
+                if (isAdminActive) logAdminTerminal(`Acquired randomized market modifier item: ${item.label}`);
+                alert(`Acquired item: ${item.label}! Modifier logic integrated.`);
+                // Erase from panel list view
+                randomizedShopItems.splice(index, 1);
+                generateRandomizedShop(); // refresh view layout
+                renderCoreUpgrades();
+                updateDisplayHUD();
+            } else {
+                alert("Insufficient coconut balance to securely claim this rotating module.");
+            }
+        }
+
+        // --- RANDOM TIME ENCOUNTERS (BOSS BATTLES) ---
+        function triggerRandomBossEvent() {
+            if (isBossActive) return;
+            isBossActive = true;
+
+            // Randomize difficulty coefficients based on current progression metrics
+            const currentCps = getCoconutsPerSecond();
+            bossTargetGoal = Math.floor(Math.max(100, currentCps * 25 * (1 + Math.random())));
+            bossTimeLimit = Math.floor(15 + (Math.random() * 15)); // 15-30 seconds duration range
+            bossTimeRemaining = bossTimeLimit;
+            bossStartBalance = gameState.coconuts;
+
+            document.getElementById('boss-target').innerText = `Generate ${bossTargetGoal.toLocaleString()} Coconuts in ${bossTimeRemaining}s to cool down the server racks!`;
+            document.getElementById('boss-banner').style.display = 'flex';
+            document.getElementById('boss-progress').style.width = '100%';
+
+            if (isAdminActive) logAdminTerminal(`CRITICAL METRIC EVENT: Task Force event initialization detected. Target load goal: ${bossTargetGoal}`);
+
+            bossCheckInterval = setInterval(() => {
+                bossTimeRemaining--;
+                document.getElementById('boss-target').innerText = `Generate ${bossTargetGoal.toLocaleString()} Coconuts in ${bossTimeRemaining}s to cool down the server racks!`;
+
+                if (bossTimeRemaining <= 0) {
+                    resolveBossEncounter(false);
+                }
+            }, 1000);
+        }
+
+        function resolveBossEncounter(victory) {
+            clearInterval(bossCheckInterval);
+            isBossActive = false;
+            document.getElementById('boss-banner').style.display = 'none';
+
+            if (victory) {
+                gameState.bossWins++;
+                const prize = Math.floor(bossTargetGoal * 0.5);
+                gameState.coconuts += prize;
+                if (isAdminActive) logAdminTerminal(`Event victory recorded. Thermal load normal. Reward dispersed: ${prize}`);
+                alert(`✨ Event Handled Successfully! 
+Processor stabilized safely. Bonus payout parsed: +${prize} Coconuts!`);
+            } else {
+                const penalty = Math.floor(gameState.coconuts * 0.15);
+                gameState.coconuts = Math.max(0, gameState.coconuts - penalty);
+                if (isAdminActive) logAdminTerminal(`Event failure recorded. System throttled core down. Fine parsed: -${penalty}`);
+                alert(`⚠️ Thermal Runaway Throttling Triggered! 
+Processor overheated under load constraint. System loss mitigation: -${penalty.toLocaleString()} Coconuts.`);
+            }
+            updateDisplayHUD();
+        }
+
+        // --- LOOT CRATES AND UNLOCK ENGINE ---
+        function openLootCrate(tier, cost) {
+            if (gameState.coconuts >= cost) {
+                gameState.coconuts -= cost;
+                
+                // Roll probability framework arrays
+                const roll = Math.random();
+                let outcomeMsg = "";
+
+                if (tier === 'standard') {
+                    if (roll < 0.4) {
+                        const win = Math.floor(50 + Math.random() * 200);
+                        gameState.coconuts += win;
+                        outcomeMsg = `Found raw component values. Dispersed +${win} Coconuts!`;
+                    } else if (roll < 0.75) {
+                        gameState.upgrades.cracker.count += 2;
+                        outcomeMsg = "Found raw plastic assemblies: Added +2 Plastic Nut-Crackers!";
+                    } else {
+                        // Grant unique skin if missing
+                        if (!gameState.unlockedSkins.includes('space_blue')) {
+                            gameState.unlockedSkins.push('space_blue');
+                            outcomeMsg = "✨ RARE UNLOCK: Acquired the Classic Space Blue skin interface preset!";
+                        } else {
+                            gameState.coconuts += 500;
+                            outcomeMsg = "Duplicate cosmetic found. Converted asset into 500 Coconuts.";
+                        }
+                    }
+                } else { // Overclocked premium crate node tier
+                    if (roll < 0.3) {
+                        gameState.upgrades.steam_link.count += 2;
+                        outcomeMsg = "High-tier assembly dropped: Received +2 Steam Cloud Pipeline blocks!";
+                    } else if (roll < 0.6) {
+                        if (!gameState.unlockedSkins.includes('octan_green')) {
+                            gameState.unlockedSkins.push('octan_green');
+                            outcomeMsg = "✨ EPIC UNLOCK: Acquired the Octan Energy Synergy skin interface preset!";
+                        } else if (!gameState.unlockedSkins.includes('cyber_glow')) {
+                            gameState.unlockedSkins.push('cyber_glow');
+                            outcomeMsg = "✨ EPIC UNLOCK: Acquired the Neon Cyberpunk Glow skin interface preset!";
+                        } else {
+                            gameState.coconuts += 4000;
+                            outcomeMsg = "All intermediate cosmetic layers filled. Converted into 4,000 Coconuts.";
+                        }
+                    } else {
+                        if (!gameState.unlockedSkins.includes('gold_brick')) {
+                            gameState.unlockedSkins.push('gold_brick');
+                            outcomeMsg = "👑 LEGENDARY DROP: Acquired the Solid Golden Brick skin surface preset!";
+                        } else {
+                            gameState.clickPowerMultiplier += 1;
+                            outcomeMsg = "Legendary asset duplicated! Permanently incremented Base Click Multiplier by +1x globally!";
+                        }
+                    }
+                }
+
+                if (isAdminActive) logAdminTerminal(`Opened loot tier: ${tier}. Logic result trace: ${outcomeMsg}`);
+                alert(outcomeMsg);
+                updateDisplayHUD();
+                renderCoreUpgrades();
+                renderSkinsInventory();
+            } else {
+                alert("Insufficient network balance to decrypt this box drop.");
+            }
+        }
+
+        function renderSkinsInventory() {
+            const container = document.getElementById('skins-inventory-list');
+            container.innerHTML = '';
+
+            gameState.unlockedSkins.forEach(skinKey => {
+                const preset = skinPresets[skinKey];
+                if (!preset) return;
+
+                const row = document.createElement('div');
+                row.className = 'tel-row';
+                row.style.background = '#111315';
+                row.style.padding = '8px';
+                row.style.marginBottom = '4px';
+                row.style.borderRadius = '3px';
+                row.style.cursor = 'pointer';
+                row.onclick = () => {
+                    gameState.activeSkin = skinKey;
+                    if (isAdminActive) logAdminTerminal(`Changed active skin design component focus to: ${skinKey}`);
+                    updateDisplayHUD();
+                    renderSkinsInventory();
+                };
+
+                const isEquipped = (gameState.activeSkin === skinKey);
+                row.innerHTML = `
+                    <span style="color:${preset.border}">${preset.label}</span>
+                    <span style="font-weight:bold; color:${isEquipped ? 'var(--accent)' : 'var(--text-muted)'}">
+                        ${isEquipped ? 'EQUIPPED' : 'USE'}
+                    </span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // --- HARDWARE HARD CODED TELEMETRY MONITOR SIMULATION ---
+        function simulateHardwareTelemetry(cps) {
+            // High end desktop processor simulation logic running on clean data arrays
+            const baseLoad = Math.min(2.0 + (cps * 0.015), 15.0);
+            const loadNoise = Math.random() * 1.5;
+            const finalLoad = (baseLoad + loadNoise).toFixed(1);
+
+            const baseTemp = Math.min(32.5 + (cps * 0.02), 48.0);
+            const tempNoise = Math.random() * 0.6;
+            const finalTemp = (baseTemp + tempNoise).toFixed(1);
+
+            // Rare spike simulation configuration injection logic
+            let clockRate = "4.30 GHz";
+            let powerDraw = "65 Watts";
+            if (Math.random() < 0.02) {
+                clockRate = "5.70 GHz [Boost]";
+                powerDraw = "170 Watts";
+                document.getElementById('tel-load-pct').style.color = 'var(--lego-red)';
+            } else {
+                document.getElementById('tel-load-pct').style.color = 'white';
+            }
+
+            document.getElementById('tel-clock').innerText = clockRate;
+            document.getElementById('tel-power').innerText = powerDraw;
+            document.getElementById('tel-load-pct').innerText = `${finalLoad}%`;
+            document.getElementById('load-bar-fill').style.width = `${finalLoad}%`;
+            document.getElementById('tel-temp').innerText = `${finalTemp} °C`;
+            document.getElementById('temp-bar-fill').style.width = `${(finalTemp / 100) * 100}%`;
+        }
+
+        // --- NAVIGATION INTERFACE MODAL CONTROLLERS ---
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+            if (id === 'crate-modal') renderSkinsInventory();
+            if (id === 'forge-modal') renderForgeInterface();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function switchLeftTab(tab) {
+            if (tab === 'upgrades') {
+                document.getElementById('left-upgrades-container').style.display = 'block';
+                document.getElementById('left-rotating-container').style.display = 'none';
+                document.getElementById('tab-upgrades-lnk').className = 'tab-btn active';
+                document.getElementById('tab-rot-lnk').className = 'tab-btn';
+            } else {
+                document.getElementById('left-upgrades-container').style.display = 'none';
+                document.getElementById('left-rotating-container').style.display = 'block';
+                document.getElementById('tab-upgrades-lnk').className = 'tab-btn';
+                document.getElementById('tab-rot-lnk').className = 'tab-btn active';
+            }
+        }
+
+        // --- ADMINISTRATIVE SECURITY OVERRIDE COMMAND PANEL (CHEAT FUNCTIONS) ---
+        function logAdminTerminal(message) {
+            const feed = document.getElementById('admin-console-feed');
+            if (feed) {
+                const ts = new Date().toLocaleTimeString();
+                feed.innerHTML += `<br>[${ts}] ${message}`;
+                feed.scrollTop = feed.scrollHeight;
+            }
+        }
+
+        function executeAdminCheat(command) {
+            if (!isAdminActive) return;
+
+            if (command === 'reset') {
+                localStorage.removeItem('lego_coconut_savefile_v3');
+                location.reload();
+            } else if (command === 'multiplier') {
+                gameState.clickPowerMultiplier *= 5;
+                logAdminTerminal("Executed administrative multiplier injection step. Current factor: " + gameState.clickPowerMultiplier + "x");
+                alert("Admin Multiplier Adjusted (x5 Base Value Added)!");
+            } else {
+                addCoconuts(command);
+                logAdminTerminal(`Injected ${command.toLocaleString()} resources directly into the active register loop memory address.`);
+            }
+            updateDisplayHUD();
         }
     </script>
 </body>

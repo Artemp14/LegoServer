@@ -1,21 +1,25 @@
-# 🥥 LEGO Server Infrastructure - Coconut Simulator Frontend
+# 🥥 LEGO Server - Coconut Simulator Core Engine Edition
 
-An interactive single-page web environment modeling an automated **LEGO Rackmount Mainframe Module** hosting a simulated cloud instance of *Coconut Simulator* via a mock Steam integration workspace.
+An interactive, high-fidelity browser game simulation tailored for standard static deployment workspaces or **GitHub Pages** domains. 
 
-## 🚀 Architectural Blueprint Components
-* **Primary Viewport Canvas**: Features an interactively animated circular core asset supporting momentum spinning physics and coordinate deformation calculations on user input vectors.
-* **Telemetry Monitoring Modal Array**: Tracks emulated system telemetry profiles for a high-end liquid-cooled system setup configuration.
-* **Cluster Gateway Verification Node**: Implements local session environment control routing. Includes localized authorization scripts exposing secure developer console registers.
+## 🛠️ Feature Components Matrix
+* **Primary Stage UI Canvas:** High-fidelity rotating, bouncing circular coconut asset layered with multi-threaded micro-physics.
+* **Persistent Safe Data Engine:** Automatic memory cycle state snapshot commits writing straight to client browser local mapping channels.
+* **Liquid Cooled AMD Ryzen 9 9950X HUD:** Real-time stabilized processor telemetry monitoring array simulation mapping 16 cores and 32 threads with custom asset rendering calculations and thermal loads.
+* **The Forging Compound:** Step-by-step infrastructure processing matrix providing deep scaling global score multiplier multipliers.
+* **Randomized Storefront Arrays:** Dynamically updates and alternates rare shop component items directly inside the navigation side views every single minute.
+* **Drop Box Crate System:** Unlocks interactive layer style textures modifying standard colors to *Space Blue*, *Octan Synergy Green*, or *Solid Gold*.
+* **Emergency System Overheat Tasks (Boss Battles):** Random alert conditions forcing quick generation goals against countdown sequences to safely dump system pressure parameters.
 
-## 🛠️ Local Development & Quick Deploy Setup
-1. Download the unified repository archive (`lego_coconut_server.zip`).
-2. Extract the file paths cleanly into your operating folder ecosystem.
-3. Open the `index.html` file using any contemporary browser window framework to execute the runtime engine locally.
+## 🔐 Administrative Overrides Access Configuration
+To clear security check interfaces and unveil the secured rolling terminal frame feed, supply your precise target sequence:
+* **Identification Token:** `Yaris`
+* **Access Matrix Password:** `sillypeach600`
 
-## 🌐 Deploying with GitHub Pages Workspace
-To project this engine onto a globally public site address using the free **GitHub Pages** server allocation framework:
-1. Initialize a new public codebase repository under your authenticated profile space (e.g., name it `lego-coconut-server`).
-2. Commit this `index.html` structure directly to the master trunk root layout level (`/`).
-3. Navigate into your code repository's upper **Settings** utility pane, and drill down into the **Pages** category module found on your navigation track.
-4. Toggle your Deployment Source branch tracker to watch your primary `main` or `master` directory architecture and commit with the **Save** action.
-5. Your deployment module automatically links online at: `https://[your-github-username].github.io/lego-coconut-server/`
+## 🚀 Fast Deployment Implementation Steps (GitHub Pages)
+1. Initialize a clean public repository channel inside your [GitHub Workspace Profile](https://github.com).
+2. Direct-upload your root directory source files (`index.html` and `README.md`) straight into the repository root partition space.
+3. Access repository context configuration by navigating over to the **Settings** layout tab navigation option menu.
+4. Scroll down until you identify the sidebar selection path element labeled **Pages**.
+5. Set deployment allocation parameters: select your target source `Branch: main`, leave folder set to `/ (root)`, and click **Save**.
+6. Your live web simulator link pipeline will process and launch online at: `https://[Your-GitHub-Username].github.io/[Repository-Name]/`
